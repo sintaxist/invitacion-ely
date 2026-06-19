@@ -1,17 +1,25 @@
 ---
-
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import Historia from "../components/Historia.astro";
+import Evento from "../components/Evento.astro";
+import Premios from "../components/Premios.astro";
+import Registro from "../components/Registro.astro";
+import Footer from "../components/Footer.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="50 Años Ely | La Fiesta del Año">
+  <main>
+    <Hero />
+
+    <Historia />
+
+    <Evento />
+
+    <Registro />
+    
+    <Premios />
+
+    <Footer />
+  </main>
+</Layout>

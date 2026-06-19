@@ -1,0 +1,54 @@
+---
+import Button from "./Button.astro";
+import SectionTitle from "./SectionTitle.astro";
+---
+
+<section
+  class="relative w-full bg-black overflow-hidden px-5 lg:px-25 xl:px-40 pb-25"
+  id="registro"
+>
+  <SectionTitle subtitle="confirmación de asistencia" titleWhite="la ceremonia" titleGold="te espera" />
+
+  <!-- CONTADOR -->
+  <div class="w-full max-w-150 mb-16">
+    <p class="space-y-6 font-sans font-light text-mont-15 sm:text-mont-18 text-white/90 leading-[1.8] mb-10">
+        Confirma tu asistencia antes del <span class="text-gold">27 de Noviembre</span> para reservar tu lugar en esta noche histórica.
+    </p>
+    <p
+      class="font-sans text-mont-15 text-white/70 uppercase tracking-widest mb-4 text-left"
+    >
+      Solo quedan:
+    </p>
+    <hr class="w-full border-white opacity-60 mb-6" />
+
+    <div
+      id="timer"
+      class="font-serif text-rose-25 text-center xs:text-rose-35 lg:text-rose-45 text-white tracking-widest leading-none"
+    >
+      00d : 00h : 00s
+    </div>
+
+    <hr class="w-full border-white opacity-60 mt-6" />
+  </div>
+
+</section>
+
+<script>
+  function updateTimer() {
+    const targetDate = new Date("December 5, 2026 00:00:00").getTime();
+    const now = new Date().getTime();
+    const diff = targetDate - now;
+
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+    const timerEl = document.getElementById("timer");
+    if (timerEl) {
+      timerEl.innerText = `${d}d : ${h}h : ${s}s`;
+    }
+  }
+
+  setInterval(updateTimer, 1000);
+  updateTimer();
+</script>

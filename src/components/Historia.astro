@@ -1,0 +1,53 @@
+---
+import SectionTitle from './SectionTitle.astro';
+---
+
+<section class="relative w-full bg-black overflow-hidden px-5 lg:px-25 xl:px-40 pb-35 sm:pb-45 sm:mt-20">
+    
+    <div class="flex flex-col lg:flex-row sm:items-center justify-between gap-12 lg:gap-16 xl:gap-20">
+
+        <div class="w-full lg:w-1/2 flex flex-col">
+            
+            <SectionTitle 
+                subtitle="50 Años" 
+                titleWhite="Elizabeth" 
+                titleGold="Freire" 
+            />
+
+            <div class="space-y-6 font-sans font-light text-mont-15 sm:text-mont-18 text-white/90 leading-[1.8]">
+                <p>
+                    Hay <span class="text-gold">personas que dejan huella</span> para siempre, y Elizabeth Freire es, sin duda, una de ellas.
+                </p>
+                
+                <p>
+                    La conocemos en el salón de clases con una paciencia y dedicación que pocos tienen, y la conocemos <span class="text-gold">siempre buscando el próximo destino</span>, la próxima aventura, el próximo aprendizaje. Y <span class="text-gold">su amor por Gloria Trevi</span>... absolutamente irrefutable.
+                </p>
+                
+                <p>
+                    <span class="text-gold">Elizabeth ha dedicado su vida a lo más hermoso</span> que existe: <span class="text-gold">encender la chispa en los ojos de sus alumnos.</span> Con 50 años de vida vividos intensamente, su historia merece —y mucho— una noche de gala.
+                </p>
+            </div>
+            
+        </div>
+
+        <div class="w-full lg:w-1/2 flex justify-center lg:justify-end">
+            
+            <div class="grid grid-cols-2 gap-4 xs:gap-6 w-full max-w-125">
+                <img 
+                    src="/ely-1.jpg" 
+                    alt="Elizabeth Freire Graduación" 
+                    class="w-full h-75 xs:h-100 lg:h-125 object-cover rounded-l-[85px] sm:rounded-l-[150px]"
+                />
+                
+                <img 
+                    src="/ely-2.jpg" 
+                    alt="Elizabeth Freire Viaje" 
+                    class="w-full h-75 xs:h-100 lg:h-125 object-cover rounded-br-[85px] sm:rounded-br-[150px]"
+                />
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

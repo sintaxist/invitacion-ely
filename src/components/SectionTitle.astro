@@ -1,0 +1,31 @@
+---
+interface Props {
+  subtitle: string;
+  titleWhite: string;
+  titleGold: string;
+  align?: "left" | "center";
+}
+
+const { subtitle, titleWhite, titleGold, align = "left" } = Astro.props;
+---
+
+<div
+  class={`relative flex flex-col w-full mb-10 z-1 ${align === "center" ? "items-center text-center" : "items-start text-left"}`}
+>
+  <span
+    class="font-sans font-light text-mont-12 xs:text-mont-15 text-white tracking-[0.2em] uppercase mb-3"
+  >
+    {subtitle}
+  </span>
+
+  <hr
+    class={`border-gold opacity-60 mb-5 ${align === "center" ? "w-full max-w-50" : "w-full max-w-70"}`}
+  />
+
+  <h2
+    class="font-serif text-rose-35 xs:text-rose-45 lg:text-rose-50 leading-[1.1] uppercase text-white"
+  >
+    {titleWhite}
+    <strong class="text-gold font-normal">{titleGold}</strong>
+  </h2>
+</div>

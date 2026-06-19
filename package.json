@@ -1,5 +1,5 @@
 {
-  "name": "helpless-horizon",
+  "name": "Invitacion Ely 50 años",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -12,6 +12,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.4.7"
+    "@tailwindcss/vite": "^4.3.1",
+    "astro": "^6.4.7",
+    "gsap": "^3.15.0",
+    "tailwindcss": "^4.3.1",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.184.1"
   }
 }

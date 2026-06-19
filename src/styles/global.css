@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #C99040;
+  --color-white: #FFF7E1;
+  --color-black: #010101;
+
+  --font-sans: 'Montserrat', sans-serif;
+  --font-serif: 'Rosehot', serif;
+
+  --text-rose-50: 50px;
+  --text-rose-45: 45px;
+  --text-rose-40: 40px;
+  --text-rose-35: 35px;
+  --text-rose-30: 30px;
+  --text-rose-25: 25px;
+
+  --text-mont-18: 18px;
+  --text-mont-15: 15px;
+  --text-mont-13: 13px;
+  --text-mont-12: 12px;
+
+  --breakpoint-xs: 350px;
+}
+
+@font-face {
+  font-family: 'Rosehot';
+  src: url('/fonts/Rosehot.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

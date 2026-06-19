@@ -1,0 +1,57 @@
+---
+interface Props {
+    text: string;
+    href: string;
+    classes?: string;
+}
+
+const { text, href, classes = '' } = Astro.props;
+---
+
+<a 
+    href={href} 
+    class={`w-full sm:w-fit relative z-1 btn-smooth-scroll inline-block px-10 py-4 rounded-full border border-white text-white font-sans font-medium text-mont-13 lg:text-mont-15 text-center tracking-[0.15em] uppercase transition-all duration-300 md:hover:bg-gold/40 md:hover:border-transparent md:hover:scale-105 ${classes}`}
+>
+    {text}
+</a>
+
+<script>
+    document.querySelectorAll('.btn-smooth-scroll').forEach(anchor => {
+        anchor.addEventListener('click', function(this: HTMLAnchorElement, e) {
+            const href = this.getAttribute('href');
+            
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                const targetElement = document.querySelector(href) as HTMLElement;
+                
+                if (targetElement) {
+                    const targetPosition = targetElement.getBoundingClientRect().top;
+                    const startPosition = window.scrollY;
+                    const duration = 800;
+                    let startTime: number | null = null;
+
+                    const ease = (t: number, b: number, c: number, d: number) => {
+                        t /= d / 2;
+                        if (t < 1) return c / 2 * t * t + b;
+                        t--;
+                        return -c / 2 * (t * (t - 2) - 1) + b;
+                    };
+
+                    const animation = (currentTime: number) => {
+                        if (startTime === null) startTime = currentTime;
+                        const timeElapsed = currentTime - startTime;
+                        const run = ease(timeElapsed, startPosition, targetPosition, duration);
+                        
+                        window.scrollTo(0, run);
+                        
+                        if (timeElapsed < duration) {
+                            requestAnimationFrame(animation);
+                        }
+                    };
+
+                    requestAnimationFrame(animation);
+                }
+            }
+        });
+    });
+</script>
