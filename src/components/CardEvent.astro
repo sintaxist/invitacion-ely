@@ -31,8 +31,9 @@ const {
 } = Astro.props;
 ---
 
+<!-- AJUSTE 1: Cambié p-8 por p-6 xs:p-8 lg:p-10 para ganar espacio en móviles -->
 <div
-  class="card-anim opacity-0 snap-start shrink-0 w-[70vw] sm:w-full last:mr-10 xs:last:mr-20 bg-white/5 backdrop-blur-xl border border-white/10 border-t-white/20 border-l-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[30px] p-8 lg:p-10 flex flex-col"
+  class="card-anim opacity-0 snap-start shrink-0 w-[70vw] sm:w-full last:mr-10 xs:last:mr-20 bg-white/5 backdrop-blur-xl border border-white/10 border-t-white/20 border-l-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[30px] p-6 xs:p-8 lg:p-10 flex flex-col"
 >
   {
     imageSrc && (
@@ -52,9 +53,11 @@ const {
   {
     date && time && locationName && (
       <ul class="space-y-6 flex-1 mb-10">
-        <li class="flex items-start gap-4">
+        <!-- AJUSTE 2: gap-3 en móviles, gap-4 en xs -->
+        <li class="flex items-start gap-3 xs:gap-4">
+          <!-- AJUSTE 3: hidden xs:block para ocultar el SVG en celulares muy pequeños -->
           <svg
-            class="w-6 h-6 text-white shrink-0 mt-0.5"
+            class="hidden xs:block w-6 h-6 text-white shrink-0 mt-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -70,9 +73,9 @@ const {
             {date}
           </span>
         </li>
-        <li class="flex items-start gap-4">
+        <li class="flex items-start gap-3 xs:gap-4">
           <svg
-            class="w-6 h-6 text-white shrink-0 mt-0.5"
+            class="hidden xs:block w-6 h-6 text-white shrink-0 mt-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -88,9 +91,9 @@ const {
             {time}
           </span>
         </li>
-        <li class="flex items-start gap-4">
+        <li class="flex items-start gap-3 xs:gap-4">
           <svg
-            class="w-6 h-6 text-white shrink-0 mt-0.5"
+            class="hidden xs:block w-6 h-6 text-white shrink-0 mt-0.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

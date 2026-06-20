@@ -4,7 +4,7 @@ import Button from "./Button.astro";
 import CardEvent from "./CardEvent.astro";
 ---
 
-<section class="relative w-full overflow-hidden pb-35 sm:pb-45" id="evento">
+<section class="relative w-full overflow-hidden mb-45 sm:mb-60" id="evento">
   <div
     class="absolute inset-0 w-full h-[90%] z-0 pointer-events-none overflow-hidden"
   >
@@ -81,14 +81,14 @@ import CardEvent from "./CardEvent.astro";
       },
       {
         scrollTrigger: {
-          trigger: ".cards-container", // La animación inicia cuando el contenedor entra en vista
-          start: "top 85%", // Inicia cuando el 15% superior del contenedor cruza el umbral del scroll
+          trigger: ".cards-container",
+          start: "top 60%",
           toggleActions: "play none none none",
         },
         y: 0,
         opacity: 1,
         duration: 1.2,
-        stagger: 0.2, // Efecto cascada: primera card, luego la segunda
+        stagger: 0.2,
         ease: "power3.out",
         onStart: () => {
           cards.forEach((card) => card.classList.remove("opacity-0"));

@@ -1,0 +1,109 @@
+---
+interface Props {
+  phoneNumber: string;
+  message: string;
+}
+
+const { phoneNumber, message } = Astro.props;
+const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+---
+
+<div class="card-perspective-wrapper relative w-full max-w-120 mx-auto">
+  <a
+    href={waUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="wa-card flex flex-col justify-center relative z-10 w-full min-h-90 sm:min-h-120
+           bg-gold/10 backdrop-blur-xl border border-gold/15 border-t-gold/25 border-l-gold/25
+           shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[30px] overflow-hidden"
+  >
+    <div
+      class="wa-content h-full p-8 sm:p-12 flex flex-col gap-6 sm:gap-10 items-center justify-center align-middle text-center"
+    >
+      <svg
+        class="pop-element w-14 sm:w-16 h-14 sm:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"
+        ></path>
+      </svg>
+
+      <h3
+        class="pop-element font-serif text-rose-30 lg:text-rose-40 text-white leading-[1.1]"
+      >
+        Confirmar <br />
+        <span class="text-gold">Asistencia</span>
+      </h3>
+      <p
+        class="pop-element font-sans font-light text-mont-15 lg:text-mont-18 text-white/80 mb-8 leading-[1.6]"
+      >
+        Haz clic aquí para enviar un mensaje de confirmacion a <strong class="text-gold font-medium">Ely</strong>.
+      </p>
+    </div>
+  </a>
+</div>
+
+<style>
+  .card-perspective-wrapper {
+    perspective: 700px;
+  }
+  .wa-card {
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .wa-content {
+    transform-style: preserve-3d;
+  }
+  .pop-element {
+    transform: translateZ(40px);
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  const wrapper = document.querySelector(
+    ".card-perspective-wrapper",
+  ) as HTMLElement;
+  const card = wrapper.querySelector(".wa-card") as HTMLElement;
+
+  // CORRECCIÓN: Seleccionamos los elementos HÍJOS directos del wrapper para no afectar a otros
+  const content = wrapper.querySelectorAll(".pop-element, h3, p, span");
+
+  const rotX = gsap.quickTo(card, "rotationX", {
+    ease: "power3",
+    duration: 0.6,
+  });
+  const rotY = gsap.quickTo(card, "rotationY", {
+    ease: "power3",
+    duration: 0.6,
+  });
+
+  // GSAP quickTo funciona sobre un elemento, para varios usamos una animación estándar dentro del evento
+  wrapper.addEventListener("pointermove", (e) => {
+    if (window.innerWidth < 1024) return;
+    const { left, top, width, height } = wrapper.getBoundingClientRect();
+    const x = (e.clientX - left) / width - 0.5;
+    const y = (e.clientY - top) / height - 0.5;
+
+    rotX(-y * 30);
+    rotY(x * 30);
+
+    // Animación de los elementos hijos dentro del contexto del wrapper
+    gsap.to(content, {
+      x: x * 40,
+      y: y * 40,
+      ease: "power3.out",
+      duration: 0.6,
+    });
+  });
+
+  wrapper.addEventListener("pointerleave", () => {
+    rotX(0);
+    rotY(0);
+    gsap.to(content, { x: 0, y: 0, ease: "power3.out", duration: 0.6 });
+  });
+</script>
