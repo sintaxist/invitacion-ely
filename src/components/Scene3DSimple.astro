@@ -1,141 +1,170 @@
 ---
+
 ---
-<div id="simple-canvas-container" class="relative z-20 w-[70%] lg:w-full mx-auto h-100 lg:h- flex justify-center items-center touch-none cursor-grab active:cursor-grabbing"></div>
+
+<div
+  id="simple-canvas-container"
+  class="relative z-20 w-[70%] lg:w-full mx-auto h-100 lg:h- flex justify-center items-center touch-none cursor-grab active:cursor-grabbing"
+>
+</div>
 
 <script>
-    import * as THREE from 'three';
-    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-    import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+  import * as THREE from "three";
+  import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+  import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+  import { DRACOLoader } from "three/examples/jsm/Addons.js";
 
-    const container = document.getElementById('simple-canvas-container');
-    
-    if (container) {
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+  import { MATERIALS, DRACO_PATH, MODEL_PATH } from "../utils/varThreeJs";
+
+  const container = document.getElementById("simple-canvas-container");
+
+  if (container) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      1000,
+    );
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+
+    container.appendChild(renderer.domElement);
+
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(
+      new RoomEnvironment(),
+      0.04,
+    ).texture;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    let tiltWrapper = new THREE.Group();
+    let modelGroup = new THREE.Group();
+
+    tiltWrapper.add(modelGroup);
+    scene.add(tiltWrapper);
+
+    let isDragging: boolean = false;
+    let previousX: number = 0;
+    let velocityX: number = 0;
+
+    const MAX_SPEED: number = 0.4;
+    const AUTO_SPEED: number = -0.01;
+    const IDLE_TIMEOUT: number = 1000;
+
+    let isIdle: boolean = true;
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const resetIdleTimer = () => {
+      isIdle = false;
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        isIdle = true;
+      }, IDLE_TIMEOUT);
+    };
+
+    container.addEventListener("pointerdown", (e: PointerEvent) => {
+      isDragging = true;
+      previousX = e.clientX;
+      velocityX = 0;
+      resetIdleTimer();
+    });
+
+    window.addEventListener("pointermove", (e: PointerEvent) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - previousX;
+      previousX = e.clientX;
+
+      const rawVelocity = deltaX * 0.012;
+      velocityX = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, rawVelocity));
+
+      resetIdleTimer();
+    });
+
+    const onPointerUp = () => {
+      if (isDragging) {
+        isDragging = false;
+        resetIdleTimer();
+      }
+    };
+
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(DRACO_PATH);
+    dracoLoader.preload();
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    gltfLoader.load(MODEL_PATH, (gltf) => {
+      const model = gltf.scene;
+
+      model.traverse((child: any) => {
+        if (!child.isMesh) return;
         
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0; 
+        if (child.name.toLowerCase().includes("object_3")) {
+            child.material = MATERIALS.base;
+        } else {
+            child.material = MATERIALS.gold;
+        }
         
-        container.appendChild(renderer.domElement);
+        child.castShadow = true;
+        child.receiveShadow = true;
+      });
 
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
-        scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+      modelGroup.add(model);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
+      tiltWrapper.rotation.z = -0.15;
+      tiltWrapper.rotation.x = 0.1;
 
-        const loader = new GLTFLoader();
-        
-        let tiltWrapper = new THREE.Group();
-        let modelGroup = new THREE.Group(); 
-        
-        tiltWrapper.add(modelGroup);
-        scene.add(tiltWrapper);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
 
-        let isDragging: boolean = false;
-        let previousX: number = 0;
-        let velocityX: number = 0;
-        
-        const MAX_SPEED: number = 0.4;     
-        const AUTO_SPEED: number = -0.01;  
-        const IDLE_TIMEOUT: number = 1000; 
-        
-        let isIdle: boolean = true; 
-        let idleTimer: ReturnType<typeof setTimeout> | undefined;
+      const isMobile = window.innerWidth <= 968;
+      let cameraZ =
+        Math.abs(maxDim / 2 / Math.tan(fov / 2)) * (isMobile ? 1.05 : 1.4);
+      camera.position.set(0, 0, cameraZ);
 
-        const resetIdleTimer = () => {
-            isIdle = false;
-            if (idleTimer) clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                isIdle = true;
-            }, IDLE_TIMEOUT);
-        };
+      tiltWrapper.position.y -= maxDim * 0.05;
 
-        container.addEventListener('pointerdown', (e: PointerEvent) => {
-            isDragging = true;
-            previousX = e.clientX;
-            velocityX = 0; 
-            resetIdleTimer();
-        });
+      camera.updateProjectionMatrix();
+    });
 
-        window.addEventListener('pointermove', (e: PointerEvent) => {
-            if (!isDragging) return;
-            const deltaX = e.clientX - previousX;
-            previousX = e.clientX;
-            
-            const rawVelocity = deltaX * 0.012; 
-            velocityX = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, rawVelocity));
-            
-            resetIdleTimer();
-        });
+    const animate = () => {
+      requestAnimationFrame(animate);
 
-        const onPointerUp = () => {
-            if (isDragging) {
-                isDragging = false;
-                resetIdleTimer(); 
-            }
-        };
+      if (modelGroup) {
+        if (!isDragging) {
+          if (isIdle) {
+            velocityX += (AUTO_SPEED - velocityX) * 0.025;
+          } else {
+            velocityX *= 0.95;
+          }
+        }
 
-        window.addEventListener('pointerup', onPointerUp);
-        window.addEventListener('pointercancel', onPointerUp);
+        modelGroup.rotation.y += velocityX;
+      }
 
-        loader.load('/oscar_trophy.glb', (gltf) => {
-            const model = gltf.scene;
-            
-            model.traverse((child: any) => {
-                if (child.isMesh && child.material) {
-                    child.material.color.set('#ECC638');
-                }
-            });
+      renderer.render(scene, camera);
+    };
+    animate();
 
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
-            model.position.sub(center); 
-            modelGroup.add(model);
-
-            // RESTAURADO: Inclinación original (-0.15)
-            tiltWrapper.rotation.z = -0.15;
-            tiltWrapper.rotation.x = 0.1;
-
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = camera.fov * (Math.PI / 180);
-            
-            const isMobile = window.innerWidth <= 968;
-            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * (isMobile ? 1.05 : 1.4); 
-            camera.position.set(0, 0, cameraZ);
-            
-            tiltWrapper.position.y -= (maxDim * 0.05);
-            
-            camera.updateProjectionMatrix();
-        });
-
-        const animate = () => {
-            requestAnimationFrame(animate);
-            
-            if (modelGroup) {
-                if (!isDragging) {
-                    if (isIdle) {
-                        velocityX += (AUTO_SPEED - velocityX) * 0.02;
-                    } else {
-                        velocityX *= 0.95;
-                    }
-                }
-                
-                modelGroup.rotation.y += velocityX;
-            }
-            
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-    }
+    window.addEventListener("resize", () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+  }
 </script>
