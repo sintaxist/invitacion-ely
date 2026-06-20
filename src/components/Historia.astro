@@ -2,9 +2,9 @@
 import SectionTitle from './SectionTitle.astro';
 ---
 
-<section class="relative w-full bg-black overflow-hidden px-5 lg:px-25 xl:px-40 pb-35 sm:pb-45 sm:mt-20">
+<section class="relative w-full max-w-400 bg-black overflow-hidden px-5 xs:px-10 lg:px-25 xl:px-40 pb-35 sm:pb-45 sm:mt-20 mx-auto">
     
-    <div class="flex flex-col lg:flex-row sm:items-center justify-between gap-12 lg:gap-16 xl:gap-20">
+    <div class="mx-auto flex flex-col lg:flex-row sm:items-center justify-between gap-12 lg:gap-16 xl:gap-20">
 
         <div class="w-full lg:w-1/2 flex flex-col">
             
@@ -33,16 +33,21 @@ import SectionTitle from './SectionTitle.astro';
         <div class="w-full lg:w-1/2 flex justify-center lg:justify-end">
             
             <div class="grid grid-cols-2 gap-4 xs:gap-6 w-full max-w-125">
+                
                 <img 
                     src="/ely-1.jpg" 
                     alt="Ely Fraire Graduación" 
-                    class="w-full h-75 xs:h-100 lg:h-125 object-cover rounded-l-[85px] sm:rounded-l-[150px]"
+                    loading="lazy"
+                    decoding="async"
+                    class="img-scroll-anim opacity-0 w-full h-75 xs:h-100 lg:h-125 object-cover rounded-l-[85px] sm:rounded-l-[150px]"
                 />
                 
                 <img 
                     src="/ely-2.jpg" 
                     alt="Ely Fraire Viaje" 
-                    class="w-full h-75 xs:h-100 lg:h-125 object-cover rounded-br-[85px] sm:rounded-br-[150px]"
+                    loading="lazy"
+                    decoding="async"
+                    class="img-scroll-anim opacity-0 w-full h-75 xs:h-100 lg:h-125 object-cover rounded-br-[85px] sm:rounded-br-[150px]"
                 />
             </div>
 
@@ -51,3 +56,39 @@ import SectionTitle from './SectionTitle.astro';
     </div>
 
 </section>
+
+<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const images = document.querySelectorAll('.img-scroll-anim');
+
+    images.forEach((img, index) => {
+        gsap.fromTo(img, 
+            { 
+                y: 60,
+                opacity: 0,
+                scale: 0.95
+            }, 
+            {
+                scrollTrigger: {
+                    trigger: img,
+                    start: "top 50%",
+                    toggleActions: "play none none none"
+                },
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 1.4,
+                delay: index * 0.2,
+                ease: "power3.out",
+                onStart: () => {
+                    img.classList.remove('opacity-0');
+                },
+                clearProps: "transform"
+            }
+        );
+    });
+</script>

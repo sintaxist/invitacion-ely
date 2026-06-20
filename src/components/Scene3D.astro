@@ -28,7 +28,7 @@
 
 <div
   id="canvas-container"
-  class="absolute lg:relative z-10 w-full lg:w-1/2 h-screen min-h-187.5 lg:min-h-0 flex justify-center items-center inset-0 lg:inset-auto"
+  class="absolute lg:relative z-10 max-w-150 w-full lg:w-1/2 h-screen min-h-187.5 max-h-225 lg:min-h-0 flex justify-center items-center inset-0 lg:inset-auto"
 >
 </div>
 
@@ -39,7 +39,7 @@
     color: var(--color-gold, #c99040);
     opacity: 0;
     transform: translateY(15px);
-    animation: elegantFadeUp 1.2s ease-out forwards;
+    animation: elegantFadeUp .5s ease-out forwards;
   }
   .loader-text:nth-child(1) {
     animation-delay: 0.1s;
@@ -205,6 +205,8 @@
       onComplete: () => {
         const el = document.getElementById("loader-screen");
         if (el) el.style.display = "none";
+        (window as any).scene3DReady = true;
+        window.dispatchEvent(new Event("scene3d-loaded"));
       },
     });
   }

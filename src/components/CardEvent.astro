@@ -1,0 +1,186 @@
+---
+interface Props {
+  title: string;
+  date?: string;
+  time?: string;
+  locationName?: string;
+  locationAddress?: string;
+  mapLink?: string;
+  dressCodeText?: string[];
+
+  imageSrc?: string;
+  imageAlt?: string;
+  spotifyLink?: string;
+  youtubeLink?: string;
+  description?: string;
+}
+
+const {
+  title,
+  date,
+  time,
+  locationName,
+  locationAddress,
+  mapLink,
+  dressCodeText,
+  imageSrc,
+  imageAlt,
+  spotifyLink,
+  youtubeLink,
+  description,
+} = Astro.props;
+---
+
+<div
+  class="card-anim opacity-0 snap-start shrink-0 w-[70vw] sm:w-full bg-white/5 backdrop-blur-xl border border-white/10 border-t-white/20 border-l-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[30px] p-8 lg:p-10 flex flex-col"
+>
+  {
+    imageSrc && (
+      <img
+        src={imageSrc}
+        alt={imageAlt || title}
+        loading="lazy"
+        class="w-full h-40 object-cover rounded-2xl mb-6"
+      />
+    )
+  }
+
+  <h3 class="font-serif text-rose-30 text-white mb-8 leading-[1.2]">
+    {title}
+  </h3>
+
+  {
+    date && time && locationName && (
+      <ul class="space-y-6 flex-1 mb-10">
+        <li class="flex items-start gap-4">
+          <svg
+            class="w-6 h-6 text-white shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span class="font-sans font-light text-mont-15 text-white/90">
+            {date}
+          </span>
+        </li>
+        <li class="flex items-start gap-4">
+          <svg
+            class="w-6 h-6 text-white shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span class="font-sans font-light text-mont-15 text-white/90">
+            {time}
+          </span>
+        </li>
+        <li class="flex items-start gap-4">
+          <svg
+            class="w-6 h-6 text-white shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </>
+          </svg>
+          <div class="flex flex-col">
+            <span class="font-sans font-medium text-mont-15 text-white">
+              {locationName}
+            </span>
+            {locationAddress && (
+              <span class="font-sans font-light text-mont-12 text-white/70 mt-1 uppercase leading-relaxed">
+                {locationAddress}
+              </span>
+            )}
+          </div>
+        </li>
+      </ul>
+    )
+  }
+
+  {
+    dressCodeText && (
+      <div class="space-y-6 font-sans font-light text-mont-15 sm:text-mont-18 text-white/90 leading-[1.8] flex-1 mb-10">
+        {dressCodeText.map((text) => (
+          <p set:html={text} />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    description && (
+      <p class="font-sans font-light text-mont-15 text-white/80 leading-[1.8] flex-1 mb-10">
+        {description}
+      </p>
+    )
+  }
+
+  <div class="mt-auto flex flex-wrap gap-4">
+    {
+      mapLink && (
+        <a
+          href={mapLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block font-sans font-medium text-mont-12 tracking-[0.15em] text-white uppercase underline decoration-white/40 underline-offset-4 transition-colors duration-300 hover:text-gold hover:decoration-gold"
+        >
+          Ver Ubicación
+        </a>
+      )
+    }
+
+    {
+      spotifyLink && (
+        <a
+          href={spotifyLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block font-sans font-medium text-mont-12 tracking-[0.15em] text-[#1DB954] uppercase underline decoration-[#1DB954]/40 underline-offset-4 transition-colors duration-300 hover:text-white hover:decoration-white"
+        >
+          Escuchar en Spotify
+        </a>
+      )
+    }
+
+    {
+      youtubeLink && (
+        <a
+          href={youtubeLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block font-sans font-medium text-mont-12 tracking-[0.15em] text-[#FF0000] uppercase underline decoration-[#FF0000]/40 underline-offset-4 transition-colors duration-300 hover:text-white hover:decoration-white"
+        >
+          Ver en YouTube
+        </a>
+      )
+    }
+  </div>
+</div>

@@ -1,36 +1,101 @@
 ---
-import Scene3D from './Scene3D.astro';
-import Button from './Button.astro';
+import Scene3D from "./Scene3D.astro";
+import Button from "./Button.astro";
 ---
 
-<section class="relative flex flex-col lg:flex-row-reverse items-center justify-end lg:justify-between h-dvh min-h-210 max-h-275 lg:max-h-none w-full bg-black overflow-hidden px-5 lg:px-25 xl:px-40 pb-35">
-    
-    <div class="absolute top-0 left-0 lg:left-auto lg:right-0 w-full lg:w-1/2 h-[60vh] lg:h-full bg-[url('/lights.png')] bg-cover bg-top lg:bg-center bg-no-repeat z-0 opacity-90 pointer-events-none"></div>
+<section
+  class="relative flex flex-col lg:flex-row-reverse items-center justify-end lg:justify-center h-dvh lg:h-auto min-h-210 max-h-275 lg:max-h-250 w-full bg-black overflow-hidden px-5 xs:px-10 lg:px-25 xl:px-40 pb-10 max-w-600 m-auto"
+>
+  <div
+    class="absolute top-0 left-0 lg:left-auto lg:right-0 w-full lg:w-1/2 h-[60vh] lg:h-full z-0 opacity-90 pointer-events-none overflow-hidden"
+  >
+    <img
+      src="/lights.png"
+      alt="Fondo de luces doradas"
+      fetchpriority="high"
+      decoding="sync"
+      class="w-full h-full object-cover object-top lg:object-center"
+    />
+  </div>
 
-    <Scene3D />
-    
-    <div class="absolute inset-0 pointer-events-none bg-linear-to-t from-black from-0% via-black/95 via-50% to-transparent z-15 lg:hidden"></div>
-    <div class="absolute inset-0 pointer-events-none hidden lg:block bg-linear-to-r from-black via-black/50 to-transparent z-15"></div>
+  <Scene3D />
 
-    <div class="relative z-20 flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 max-w-125 lg:max-w-none pointer-events-auto lg:pr-10">
-        
-        <span class="font-sans font-light text-mont-12 xs:text-mont-15 lg:text-mont-18 text-white tracking-[0.2em] uppercase mb-5">
-            50 Años Ely
-        </span>
-        
-        <h1 class="font-serif text-rose-35 xs:text-rose-45 lg:text-rose-50 leading-[1.2] uppercase text-center lg:text-left text-white mb-10 lg:mb-12">
-            Estas <strong class="text-gold font-normal">Nominado</strong> a la fiesta del año
-        </h1>
-        
-        <hr class="w-full border-gold opacity-60" />
-        
-        <div class="w-full font-serif text-rose-25 xs:text-rose-30 text-gold tracking-widest flex items-center justify-center gap-3 xs:gap-5">
-            DIC <span class="text-[0.5em]">&bull;</span> <strong class="text-[60px] xs:text-[90px] font-normal"> 5 </strong> <span class="text-[0.5em]">&bull;</span> 2026
-        </div>
+  <!-- gradientes -->
+  <div
+    class="absolute inset-0 pointer-events-none bg-linear-to-t from-black from-0% via-black/95 via-50% to-transparent z-15 lg:hidden"
+  >
+  </div>
+  <div
+    class="absolute inset-0 pointer-events-none hidden lg:block bg-linear-to-r from-black via-black/50 to-transparent z-15"
+  >
+  </div>
 
-        <hr class="w-full border-gold opacity-60 mb-10 lg:mb-12" />
+  <!-- textos -->
+  <div
+    class="relative z-20 flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 max-w-175 pointer-events-auto"
+  >
+    <span
+      class="hero-anim opacity-0 font-sans font-light text-mont-12 xs:text-mont-15 lg:text-mont-18 text-white tracking-[0.2em] uppercase mb-5"
+    >
+      50 Años Ely
+    </span>
 
-        <Button href="#registro" text="Confirmar Asistencia" />
-        
+    <h1
+      class="hero-anim opacity-0 font-serif text-rose-35 xs:text-rose-45 lg:text-rose-50 leading-[1.2] uppercase text-center lg:text-left text-white mb-10 lg:mb-12"
+    >
+      Estas <strong class="text-gold font-normal">Nominado</strong> a la fiesta del
+      año
+    </h1>
+
+    <hr class="hero-anim opacity-0 w-full border-gold" />
+
+    <div
+      class="hero-anim opacity-0 w-full font-serif text-rose-25 xs:text-rose-30 text-gold tracking-widest flex items-center justify-center gap-3 xs:gap-5 my-6"
+    >
+      DIC <span class="text-[0.5em]">&bull;</span>
+      <strong class="text-[60px] xs:text-[90px] font-normal leading-none">
+        5
+      </strong>
+      <span class="text-[0.5em]">&bull;</span> 2026
     </div>
+
+    <hr class="hero-anim opacity-0 w-full border-gold mb-10 lg:mb-12" />
+
+    <div class="hero-anim opacity-0">
+      <Button href="#registro" text="Confirmar Asistencia" />
+    </div>
+  </div>
 </section>
+
+<script>
+  import { gsap } from "gsap";
+
+  const playHeroAnimation = () => {
+    gsap.fromTo(
+      ".hero-anim",
+      {
+        y: 40,
+        opacity: 0,
+      },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        stagger: 0.15,
+        ease: "power3.out",
+        onStart: () => {
+          document.querySelectorAll(".hero-anim").forEach((el) => {
+            el.classList.remove("opacity-0");
+          });
+        },
+        clearProps: "transform",
+      },
+    );
+  };
+
+  if ((window as any).scene3DReady) {
+    playHeroAnimation();
+  } else {
+    window.addEventListener("scene3d-loaded", playHeroAnimation);
+  }
+</script>
