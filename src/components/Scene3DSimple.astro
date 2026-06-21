@@ -19,6 +19,9 @@
   const container = document.getElementById("simple-canvas-container");
 
   if (container) {
+    // Limpia cualquier canvas previo (evita apilar canvas en HMR / navegación)
+    container.replaceChildren();
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       45,
@@ -69,14 +72,15 @@
       }, IDLE_TIMEOUT);
     };
 
-    container.addEventListener("pointerdown", (e: PointerEvent) => {
+    // Listeners nombrados para poder removerlos en el cleanup
+    const onPointerDown = (e: PointerEvent) => {
       isDragging = true;
       previousX = e.clientX;
       velocityX = 0;
       resetIdleTimer();
-    });
+    };
 
-    window.addEventListener("pointermove", (e: PointerEvent) => {
+    const onPointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
       const deltaX = e.clientX - previousX;
       previousX = e.clientX;
@@ -85,7 +89,7 @@
       velocityX = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, rawVelocity));
 
       resetIdleTimer();
-    });
+    };
 
     const onPointerUp = () => {
       if (isDragging) {
@@ -94,6 +98,8 @@
       }
     };
 
+    container.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
 
@@ -109,13 +115,13 @@
 
       model.traverse((child: any) => {
         if (!child.isMesh) return;
-        
+
         if (child.name.toLowerCase().includes("object_3")) {
-            child.material = MATERIALS.base;
+          child.material = MATERIALS.base;
         } else {
-            child.material = MATERIALS.gold;
+          child.material = MATERIALS.gold;
         }
-        
+
         child.castShadow = true;
         child.receiveShadow = true;
       });
@@ -142,8 +148,11 @@
       camera.updateProjectionMatrix();
     });
 
+    // Guardamos el id del rAF para poder cancelarlo en el cleanup
+    let rafId = 0;
+
     const animate = () => {
-      requestAnimationFrame(animate);
+      rafId = requestAnimationFrame(animate);
 
       if (modelGroup) {
         if (!isDragging) {
@@ -161,10 +170,37 @@
     };
     animate();
 
-    window.addEventListener("resize", () => {
+    // Listener de resize nombrado para poder removerlo
+    const onResize = () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
-    });
+    };
+    window.addEventListener("resize", onResize);
+
+    // ---- LIMPIEZA: detiene el loop, remueve listeners y libera la GPU ----
+    const cleanup = () => {
+      cancelAnimationFrame(rafId);
+      if (idleTimer) clearTimeout(idleTimer);
+
+      container.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      window.removeEventListener("resize", onResize);
+
+      pmremGenerator.dispose();
+      renderer.dispose();
+      renderer.forceContextLoss?.();
+      renderer.domElement.remove();
+    };
+
+    // Astro: antes de intercambiar de página (View Transitions / ClientRouter)
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
+
+    // Vite HMR en desarrollo: limpia la instancia anterior antes de re-ejecutar
+    if (import.meta.hot) {
+      import.meta.hot.dispose(cleanup);
+    }
   }
 </script>

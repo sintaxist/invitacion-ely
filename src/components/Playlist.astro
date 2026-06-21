@@ -1,0 +1,125 @@
+---
+import SectionTitle from "./SectionTitle.astro";
+import CardEvent from "./CardEvent.astro";
+
+const playlist = [
+  {
+    title: "La Marcha De Los Santos",
+    imageSrc: "/songs/la-marcha-de-los-santos.jpeg",
+    youtubeLink: "https://www.youtube.com/watch?v=cAYn8oji_3g",
+    spotifyLink:
+      "https://open.spotify.com/intl-es/track/0AeCoXVwyfWnbJXh98RI9t?si=b4bf7b107c5c4685",
+  },
+  {
+    title: "We Are The Champions",
+    imageSrc: "/songs/we-are-the-champions.jpeg",
+    youtubeLink:
+      "https://www.youtube.com/watch?v=d5GkgVhFeZY&list=RDd5GkgVhFeZY&start_radio=1",
+    spotifyLink:
+      "https://open.spotify.com/intl-es/track/5OopR4VVuv6WK07X8ZM9v7?si=c8586e5e502444a3",
+  },
+  {
+    title: "Tribu",
+    imageSrc: "/songs/tribu.jpeg",
+    youtubeLink: "https://www.youtube.com/watch?v=gqqEsYW8Yto",
+    spotifyLink:
+      "https://open.spotify.com/intl-es/track/3IYjSrrIOz5Ox3cnSwcEpv?si=ad9a84fd2f274a22",
+  },
+  {
+    title: "Somos Amigos",
+    imageSrc: "/songs/somos-amigos.jpeg",
+    youtubeLink:
+      "https://www.youtube.com/watch?v=S-zVkT2yJx0&list=RDS-zVkT2yJx0&start_radio=1",
+    spotifyLink:
+      "https://open.spotify.com/intl-es/track/1ujhS6I6qqdJeuZ6sYHQY8?si=c7d79a9bc9934165",
+  },
+  {
+    title: "Garabato Colorado",
+    imageSrc: "/songs/garabato-colorado.jpeg",
+    youtubeLink:
+      "https://www.youtube.com/watch?v=gsDIwloStmQ&list=RDgsDIwloStmQ&start_radio=1",
+    spotifyLink:
+      "https://open.spotify.com/intl-es/track/1XddjFsSL7rpNLcr7FSop7?si=1253c79db2034446",
+  },
+  {
+    title: "Soy una Serpiente",
+    imageSrc: "/songs/soy-una-serpiente.jpeg",
+    youtubeLink:
+      "https://www.youtube.com/watch?v=R6HoqbnuRaw&list=RDR6HoqbnuRaw&start_radio=1",
+    spotifyLink:
+      "https://open.spotify.com/intl-es/track/1OhhuJ8tvBNtDSeh6fAndR?si=7df757c21bae4ab3",
+  },
+];
+---
+
+<section
+  class="relative w-full overflow-hidden mb-40 sm:mb-50 mx-auto max-w-400"
+  id="musica"
+>
+  <div class="px-5 xs:px-10 lg:px-25 xl:px-40 relative z-20 mb-12">
+    <SectionTitle
+      subtitle="Códigos Canciones"
+      titleWhite="Toma de"
+      titleGold="Fotos"
+    />
+
+    <p
+      class="font-sans font-light text-mont-15 xs:text-mont-18 text-white/90 leading-[1.8]"
+    >
+      Todos los buenos momentos se comparten con música. ¡Prepárate para cantar!
+    </p>
+  </div>
+
+  <div
+    class="playlist-container relative z-20 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory w-full max-w-400 mx-5 xs:mx-10 sm:mx-auto gap-5 xs:gap-10 sm:px-10 lg:px-25 xl:px-40 sm:grid sm:grid-cols-2 lg:grid-cols-3 lg:gap-10 overflow-visible pb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+  >
+    {
+      playlist.map((song) => (
+        <CardEvent
+          title={song.title}
+          imageSrc={song.imageSrc}
+          youtubeLink={song.youtubeLink}
+          spotifyLink={song.spotifyLink}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Aseguramos que SOLO seleccione las de música
+  const musicCards = document.querySelectorAll("#musica .card-anim");
+
+  if (musicCards.length > 0) {
+    gsap.fromTo(
+      musicCards,
+      {
+        y: 50,
+        opacity: 0,
+      },
+      {
+        scrollTrigger: {
+          trigger: "#musica",
+          start: "top 60%",
+          toggleActions: "play none none none",
+        },
+        y: 0,
+        opacity: 1,
+        duration: 1.2,
+        stagger: 0.2,
+        ease: "power3.out",
+        onStart: () => {
+          musicCards.forEach((card) => {
+            card.classList.remove("opacity-0");
+          });
+        },
+        // Eliminamos clearProps para evitar el salto de repintado al final
+      },
+    );
+  }
+</script>

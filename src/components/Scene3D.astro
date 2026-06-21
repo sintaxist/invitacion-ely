@@ -28,7 +28,7 @@
 
 <div
   id="canvas-container"
-  class="absolute lg:relative z-10 max-w-150 w-full lg:w-1/2 h-screen min-h-187.5 lg:min-h-200 max-h-225 flex justify-center items-center inset-0 lg:inset-auto"
+  class="absolute lg:relative z-10 max-w-150 w-full lg:w-1/2 h-screen min-h-187.5 lg:min-h-200 max-h-225 flex justify-center items-center inset-0 lg:inset-auto mx-auto lg:mx-0"
 >
 </div>
 
@@ -287,15 +287,20 @@
   let mouseX = 0,
     mouseY = 0;
 
-  document.addEventListener("mousemove", ({ clientX, clientY }) => {
+  // Listener nombrado para poder removerlo en el cleanup
+  function onMouseMove({ clientX, clientY }: MouseEvent) {
     if (window.innerWidth > MOUSE_BREAKPOINT) {
       mouseX = (clientX - window.innerWidth / 2) * 0.001;
       mouseY = (clientY - window.innerHeight / 2) * 0.001;
     }
-  });
+  }
+  document.addEventListener("mousemove", onMouseMove);
 
   const container = document.getElementById("canvas-container");
   if (!container) throw new Error("canvas-container not found");
+
+  // Limpia cualquier canvas previo (evita apilar canvas en HMR / navegación)
+  container.replaceChildren();
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -408,8 +413,11 @@
     }
   }
 
+  // Guardamos el id del rAF para poder cancelarlo en el cleanup
+  let rafId = 0;
+
   function animate() {
-    requestAnimationFrame(animate);
+    rafId = requestAnimationFrame(animate);
     animateParticles();
     modelGroup.rotation.y -= 0.01;
     controls.update();
@@ -417,14 +425,48 @@
   }
   animate();
 
-  window.addEventListener("resize", () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
+  // Listener de resize nombrado para poder removerlo
+  function onResize() {
+    camera.aspect = container!.clientWidth / container!.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    composer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(container!.clientWidth, container!.clientHeight);
+    composer.setSize(container!.clientWidth, container!.clientHeight);
 
     if (window.innerWidth <= MOUSE_BREAKPOINT && interactionWrapper) {
       interactionWrapper.rotation.set(0.1, 0, -0.15);
     }
-  });
+  }
+  window.addEventListener("resize", onResize);
+
+  // ---- LIMPIEZA: detiene el loop, remueve listeners y libera la GPU ----
+  function cleanup() {
+    cancelAnimationFrame(rafId);
+
+    document.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("resize", onResize);
+
+    // Matamos cualquier tween de GSAP que siga corriendo
+    gsap.killTweensOf(camera.position);
+    gsap.killTweensOf("#loader-screen");
+
+    controls.dispose();
+    particles?.geometry.dispose();
+    (particles?.material as THREE.Material | undefined)?.dispose();
+    pmrem.dispose();
+
+    // EffectComposer expone dispose en versiones recientes; lo llamamos si existe
+    (composer as any).dispose?.();
+
+    renderer.dispose();
+    renderer.forceContextLoss?.();
+    renderer.domElement.remove();
+  }
+
+  // Astro: antes de intercambiar de página (View Transitions / ClientRouter)
+  document.addEventListener("astro:before-swap", cleanup, { once: true });
+
+  // Vite HMR en desarrollo: limpia la instancia anterior antes de re-ejecutar
+  if (import.meta.hot) {
+    import.meta.hot.dispose(cleanup);
+  }
 </script>
