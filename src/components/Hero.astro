@@ -14,9 +14,10 @@ import lightImage from "../assets/lights.png";
     <Image
       src={lightImage} 
       alt="Fondo de luces" 
-      quality="high"
-      loading="lazy"
-      decoding="async"
+      width={900} 
+      quality="mid"
+      loading="eager" 
+      fetchpriority="high"
       class="w-full h-full object-cover object-top lg:object-center"
       style="transform: translateZ(0); will-change: transform; backface-visibility: hidden;"
     />
