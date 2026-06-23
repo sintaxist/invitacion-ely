@@ -82,11 +82,9 @@
     const { gsap } = await import("gsap");
     const { MATERIALS, DRACO_PATH, MODEL_PATH } = await import("../utils/varThreeJs");
 
-    // LÓGICA DE CARGA INTELIGENTE SEGÚN SCROLL
     const isScrolledDown = window.scrollY > window.innerHeight * 0.2;
 
     if (isScrolledDown) {
-      // Si recargó estando abajo, ocultamos el loader rápido y despertamos los textos
       gsap.to("#loader-screen", {
         opacity: 0,
         duration: 0.3,
@@ -204,13 +202,10 @@
     function hideLoader() {
       const loader = document.getElementById("loader-screen");
       
-      // Si el loader ya se ocultó rápido por culpa del scroll, devolvemos un tween vacío 
-      // para que el modelo entre sin problemas de fondo
       if (isScrolledDown) {
         return gsap.to({}, { duration: 0 });
       }
       
-      // Si el usuario estaba arriba en el Hero, hace la animación normal y avisa a los textos
       return gsap.to("#loader-screen", {
         opacity: 0, duration: 0.6, ease: "power2.inOut",
         onComplete: () => {
