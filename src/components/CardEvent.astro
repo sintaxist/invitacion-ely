@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+
 interface Props {
   title: string;
   date?: string;
@@ -8,7 +10,7 @@ interface Props {
   mapLink?: string;
   dressCodeText?: string[];
 
-  imageSrc?: string;
+  imageSrc?: ImageMetadata | any;
   imageAlt?: string;
   spotifyLink?: string;
   youtubeLink?: string;
@@ -37,12 +39,14 @@ const {
 >
   {
     imageSrc && (
-      <img
+      <Image
         src={imageSrc}
         alt={imageAlt || title}
+        width={600}
+        height={600}
         loading="lazy"
         decoding="async"
-        class="w-full h-40 object-cover rounded-2xl mb-6 transform-gpu"
+        class="w-full aspect-square object-cover rounded-2xl mb-6 transform-gpu"
         style="backface-visibility: hidden; transform: translateZ(0);"
       />
     )

@@ -2,18 +2,23 @@
 import SectionTitle from "./SectionTitle.astro";
 import Button from "./Button.astro";
 import CardEvent from "./CardEvent.astro";
+import { Image } from "astro:assets";
+import lightsRed from "../assets/lights-red.png";
 ---
 
 <section class="relative w-full overflow-hidden mb-45 sm:mb-60" id="evento">
   <div
     class="absolute inset-0 w-full h-[90%] z-0 pointer-events-none overflow-hidden"
   >
-    <img
-      src="/lights-red.png"
-      alt="Fondo de luces rojas"
+    <Image
+      src={lightsRed} 
+      alt="Fondo de luces rojas" 
+      width={1200} 
+      quality="high"
       loading="lazy"
       decoding="async"
-      class="w-full h-full object-cover object-top opacity-80"
+      class="w-full h-full object-cover object-top"
+      style="transform: translateZ(0); will-change: transform; backface-visibility: hidden;"
     />
   </div>
 

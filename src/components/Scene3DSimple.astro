@@ -19,7 +19,6 @@
   const container = document.getElementById("simple-canvas-container");
 
   if (container) {
-    // Limpia cualquier canvas previo (evita apilar canvas en HMR / navegación)
     container.replaceChildren();
 
     const scene = new THREE.Scene();
@@ -72,7 +71,6 @@
       }, IDLE_TIMEOUT);
     };
 
-    // Listeners nombrados para poder removerlos en el cleanup
     const onPointerDown = (e: PointerEvent) => {
       isDragging = true;
       previousX = e.clientX;
@@ -148,7 +146,6 @@
       camera.updateProjectionMatrix();
     });
 
-    // Guardamos el id del rAF para poder cancelarlo en el cleanup
     let rafId = 0;
 
     const animate = () => {
@@ -170,7 +167,6 @@
     };
     animate();
 
-    // Listener de resize nombrado para poder removerlo
     const onResize = () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
@@ -178,7 +174,6 @@
     };
     window.addEventListener("resize", onResize);
 
-    // ---- LIMPIEZA: detiene el loop, remueve listeners y libera la GPU ----
     const cleanup = () => {
       cancelAnimationFrame(rafId);
       if (idleTimer) clearTimeout(idleTimer);
@@ -195,10 +190,8 @@
       renderer.domElement.remove();
     };
 
-    // Astro: antes de intercambiar de página (View Transitions / ClientRouter)
     document.addEventListener("astro:before-swap", cleanup, { once: true });
 
-    // Vite HMR en desarrollo: limpia la instancia anterior antes de re-ejecutar
     if (import.meta.hot) {
       import.meta.hot.dispose(cleanup);
     }

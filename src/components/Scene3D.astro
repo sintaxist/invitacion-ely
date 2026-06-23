@@ -1,5 +1,4 @@
 ---
-
 ---
 
 <div
@@ -66,407 +65,387 @@
 </style>
 
 <script>
-  import * as THREE from "three";
-  import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-  import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-  import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-  import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-  import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-  import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-  import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-  import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
-  import { gsap } from "gsap";
-  import { MATERIALS, DRACO_PATH, MODEL_PATH } from "../utils/varThreeJs";
-
-  const PARTICLE_COUNT = 200;
-  const MOBILE_BREAKPOINT = 1000;
-  const MOUSE_BREAKPOINT = 968;
-
-  function isMobile() {
-    return window.innerWidth <= MOBILE_BREAKPOINT;
-  }
-
-  function createParticleTexture(): THREE.CanvasTexture {
-    const canvas = Object.assign(document.createElement("canvas"), {
-      width: 32,
-      height: 32,
-    });
-    const ctx = canvas.getContext("2d")!;
-    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gradient.addColorStop(0, "rgba(255,255,255,1)");
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 32, 32);
-    return new THREE.CanvasTexture(canvas);
-  }
-
-  function buildParticles(maxDim: number): THREE.Points {
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
-    const speeds = new Float32Array(PARTICLE_COUNT);
-    const sways = new Float32Array(PARTICLE_COUNT);
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const y = -maxDim + Math.random() * (maxDim * 5);
-      const r = Math.sqrt(Math.random()) * maxDim * 0.6;
-      const theta = Math.random() * Math.PI * 2;
-      positions[i * 3] = r * Math.cos(theta);
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = r * Math.sin(theta);
-      speeds[i] = (Math.random() * 0.003 + 0.001) * maxDim;
-      sways[i] = Math.random() * Math.PI * 2;
-    }
-
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-    const material = new THREE.PointsMaterial({
-      color: 0xffeebb,
-      size: maxDim * 0.015,
-      transparent: true,
-      opacity: 1,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      map: createParticleTexture(),
-    });
-
-    const points = new THREE.Points(geometry, material);
-
-    (points as any).speeds = speeds;
-    (points as any).sways = sways;
-    return points;
-  }
-
-  function setupRenderer(container: HTMLElement): THREE.WebGLRenderer {
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    container.appendChild(renderer.domElement);
-    return renderer;
-  }
-
-  function setupComposer(
-    renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene,
-    camera: THREE.Camera,
-  ): EffectComposer {
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-
-    const bloom = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      1.5,
-      0.4,
-      0.85,
-    );
-    bloom.threshold = 0.95;
-    bloom.strength = 0.25;
-    bloom.radius = 0.3;
-    composer.addPass(bloom);
-    composer.addPass(new OutputPass());
-    return composer;
-  }
-
-  function setupControls(
-    camera: THREE.Camera,
-    domElement: HTMLElement,
-  ): OrbitControls {
-    const controls = new OrbitControls(camera, domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.04;
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.minPolarAngle = Math.PI / 3;
-    controls.maxPolarAngle = Math.PI / 2 + 0.05;
-    return controls;
-  }
-
-  function setupLights(scene: THREE.Scene, maxDim: number) {
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(3, 3, 5);
-    scene.add(dirLight);
-
-    const spotLight = new THREE.SpotLight(0xffeedd, 30);
-    spotLight.position.set(0, maxDim * 2.5, 0);
-    spotLight.angle = Math.PI / 8;
-    spotLight.penumbra = 0.8;
-    scene.add(spotLight);
-    scene.add(spotLight.target);
-  }
-
-  function hideLoader() {
-    return gsap.to("#loader-screen", {
-      opacity: 0,
-      duration: 0.6,
-      ease: "power2.inOut",
-      onComplete: () => {
-        const el = document.getElementById("loader-screen");
-        if (el) el.style.display = "none";
-        (window as any).scene3DReady = true;
-        window.dispatchEvent(new Event("scene3d-loaded"));
-      },
-    });
-  }
-
-  function playIntroAnimation(
-    modelGroup: THREE.Group,
-    interactionWrapper: THREE.Group,
-    targetScale: number,
-    finalHeightOffset: number,
-  ) {
-    gsap
-      .timeline()
-      .add(hideLoader())
-      .to(
-        modelGroup.scale,
-        {
-          x: targetScale,
-          y: targetScale,
-          z: targetScale,
-          duration: 1.2,
-          ease: "power2.out",
-        },
-        "-=0.2",
-      )
-      .to(
-        modelGroup.position,
-        { y: finalHeightOffset, duration: 1.0, ease: "power2.out" },
-        "<",
-      )
-      .to(
-        interactionWrapper.rotation,
-        { z: -0.15, x: 0.1, duration: 1.0, ease: "power2.out" },
-        "<",
-      )
-      .fromTo(
-        modelGroup.rotation,
-        { y: -Math.PI / 4 },
-        { y: 0, duration: 1.2, ease: "power2.out" },
-        "<",
-      );
-  }
-
-  function setupResetOnIdle(
-    controls: OrbitControls,
-    camera: THREE.PerspectiveCamera,
-    originalCameraZ: number,
-  ) {
-    let resetTimeout: ReturnType<typeof setTimeout> | undefined;
-
-    controls.addEventListener("start", () => {
-      if (resetTimeout) clearTimeout(resetTimeout);
-      gsap.killTweensOf(camera.position);
-    });
-
-    controls.addEventListener("end", () => {
-      resetTimeout = setTimeout(() => {
-        gsap.to(camera.position, {
-          x: 0,
-          y: 0,
-          z: originalCameraZ,
-          duration: 2.0,
-          ease: "power3.inOut",
-          onStart: () => {
-            controls.enabled = false;
-          },
-          onUpdate: () => {
-            camera.lookAt(0, 0, 0);
-          },
-          onComplete: () => {
-            controls.enabled = true;
-            controls.update();
-          },
-        });
-      }, 1000);
-    });
-  }
-
-  let mouseX = 0,
-    mouseY = 0;
-
-  // Listener nombrado para poder removerlo en el cleanup
-  function onMouseMove({ clientX, clientY }: MouseEvent) {
-    if (window.innerWidth > MOUSE_BREAKPOINT) {
-      mouseX = (clientX - window.innerWidth / 2) * 0.001;
-      mouseY = (clientY - window.innerHeight / 2) * 0.001;
-    }
-  }
-  document.addEventListener("mousemove", onMouseMove);
-
   const container = document.getElementById("canvas-container");
-  if (!container) throw new Error("canvas-container not found");
 
-  // Limpia cualquier canvas previo (evita apilar canvas en HMR / navegación)
-  container.replaceChildren();
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      initThreeScene();
+      observer.disconnect();
+    }
+  }, { threshold: 0.01 });
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(
-    45,
-    container.clientWidth / container.clientHeight,
-    0.1,
-    1000,
-  );
-  const renderer = setupRenderer(container);
-  const composer = setupComposer(renderer, scene, camera);
-  const controls = setupControls(camera, renderer.domElement);
+  if (container) observer.observe(container);
 
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  const modelGroup = new THREE.Group();
-  const interactionWrapper = new THREE.Group();
-  interactionWrapper.add(modelGroup);
-  scene.add(interactionWrapper);
-  modelGroup.scale.setScalar(0);
-  let particles: THREE.Points | null = null;
-  let maxDim = 0;
+  async function initThreeScene() {
+    const THREE = await import("three");
+    const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
+    const { DRACOLoader } = await import("three/examples/jsm/loaders/DRACOLoader.js");
+    const { OrbitControls } = await import("three/examples/jsm/controls/OrbitControls.js");
+    const { RoomEnvironment } = await import("three/examples/jsm/environments/RoomEnvironment.js");
+    const { EffectComposer } = await import("three/examples/jsm/postprocessing/EffectComposer.js");
+    const { RenderPass } = await import("three/examples/jsm/postprocessing/RenderPass.js");
+    const { UnrealBloomPass } = await import("three/examples/jsm/postprocessing/UnrealBloomPass.js");
+    const { OutputPass } = await import("three/examples/jsm/postprocessing/OutputPass.js");
+    const { gsap } = await import("gsap");
+    const { MATERIALS, DRACO_PATH, MODEL_PATH } = await import("../utils/varThreeJs");
 
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath(DRACO_PATH);
-  dracoLoader.preload();
+    const PARTICLE_COUNT = 200;
+    const MOBILE_BREAKPOINT = 1000;
+    const MOUSE_BREAKPOINT = 968;
 
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.setDRACOLoader(dracoLoader);
+    function isMobile() {
+      return window.innerWidth <= MOBILE_BREAKPOINT;
+    }
 
-  gltfLoader.load(
-    MODEL_PATH,
-    (gltf) => {
-      const model = gltf.scene;
-
-      model.traverse((child: any) => {
-        if (!child.isMesh) return;
-        child.material = child.name.toLowerCase().includes("object_3")
-          ? MATERIALS.base
-          : MATERIALS.gold;
-        child.castShadow = true;
-        child.receiveShadow = true;
+    function createParticleTexture() {
+      const canvas = Object.assign(document.createElement("canvas"), {
+        width: 32,
+        height: 32,
       });
 
-      const box = new THREE.Box3().setFromObject(model);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      model.position.sub(center);
-      modelGroup.add(model);
+      const ctx = canvas.getContext("2d")!;
+      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gradient.addColorStop(0, "rgba(255,255,255,1)");
+      gradient.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 32, 32);
+      return new THREE.CanvasTexture(canvas);
+    }
 
-      maxDim = Math.max(size.x, size.y, size.z);
-      setupLights(scene, maxDim);
+    function buildParticles(maxDim: any) {
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(PARTICLE_COUNT * 3);
+      const speeds = new Float32Array(PARTICLE_COUNT);
+      const sways = new Float32Array(PARTICLE_COUNT);
 
-      const fov = camera.fov * (Math.PI / 180);
-      const mobile = isMobile();
-      const originalCameraZ =
-        Math.abs(maxDim / 2 / Math.tan(fov / 2)) * (mobile ? 2 : 1.3);
-      camera.position.set(0, 0, originalCameraZ);
-      controls.target.set(0, 0, 0);
-      camera.updateProjectionMatrix();
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const y = -maxDim + Math.random() * (maxDim * 5);
+        const r = Math.sqrt(Math.random()) * maxDim * 0.6;
+        const theta = Math.random() * Math.PI * 2;
+        positions[i * 3] = r * Math.cos(theta);
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = r * Math.sin(theta);
+        speeds[i] = (Math.random() * 0.003 + 0.001) * maxDim;
+        sways[i] = Math.random() * Math.PI * 2;
+      }
 
-      const targetScale = mobile ? 1.5 : 0.95;
-      const finalHeightOffset = mobile ? maxDim * 0.08 : -(maxDim * 0.01);
-      modelGroup.position.y = finalHeightOffset - maxDim * 0.3;
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
-      particles = buildParticles(maxDim);
-      scene.add(particles);
+      const material = new THREE.PointsMaterial({
+        color: 0xffeebb,
+        size: maxDim * 0.015,
+        transparent: true,
+        opacity: 1,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        map: createParticleTexture(),
+      });
 
-      playIntroAnimation(
-        modelGroup,
-        interactionWrapper,
-        targetScale,
-        finalHeightOffset,
+
+      const points: any = new THREE.Points(geometry, material);
+      points.speeds = speeds;
+      points.sways = sways;
+      return points;
+    }
+
+    function setupRenderer(container: any) {
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      container.appendChild(renderer.domElement);
+      return renderer;
+    }
+
+    function setupComposer(renderer: any, scene: any, camera: any) {
+      const composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5,
+        0.4,
+        0.85,
       );
-      setupResetOnIdle(controls, camera, originalCameraZ);
-    },
-    ({ loaded, total, lengthComputable }) => {
-      if (!lengthComputable) return;
-      const pct = (loaded / total) * 100;
-      const bar = document.getElementById("loader-bar");
-      const txt = document.getElementById("loader-percentage");
-      if (bar) bar.style.width = `${pct}%`;
-      if (txt) txt.innerText = `${Math.round(pct)}%`;
-    },
-    (error) => {
-      console.error("Error loading model:", error);
-      const el = document.getElementById("loader-screen");
-      if (el) el.style.display = "none";
-    },
-  );
-
-  function animateParticles() {
-    if (!particles || maxDim === 0) return;
-
-    const pos = particles.geometry.attributes.position.array as Float32Array;
-    const speeds = (particles as any).speeds as Float32Array;
-    const sways = (particles as any).sways as Float32Array;
-    const desktop = window.innerWidth > MOUSE_BREAKPOINT;
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      pos[i * 3 + 1] -= speeds[i];
-      pos[i * 3] += Math.sin(sways[i]) * 0.0005 * maxDim;
-      sways[i] += 0.01;
-      if (pos[i * 3 + 1] < -maxDim) pos[i * 3 + 1] = maxDim * 4;
+      bloom.threshold = 0.95;
+      bloom.strength = 0.25;
+      bloom.radius = 0.3;
+      composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+      return composer;
     }
-    particles.geometry.attributes.position.needsUpdate = true;
 
-    if (desktop) {
-      particles.rotation.y += 0.05 * (mouseX * 1.5 - particles.rotation.y);
-      particles.rotation.x += 0.05 * (mouseY * 1.5 - particles.rotation.x);
+    function setupControls(camera: any, domElement: any) {
+      const controls = new OrbitControls(camera, domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.04;
+      controls.enableZoom = false;
+      controls.enablePan = false;
+      controls.minPolarAngle = Math.PI / 3;
+      controls.maxPolarAngle = Math.PI / 2 + 0.05;
+      return controls;
     }
-  }
 
-  // Guardamos el id del rAF para poder cancelarlo en el cleanup
-  let rafId = 0;
+    function setupLights(scene: any, maxDim: any) {
+      scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
-  function animate() {
-    rafId = requestAnimationFrame(animate);
-    animateParticles();
-    modelGroup.rotation.y -= 0.01;
-    controls.update();
-    composer.render();
-  }
-  animate();
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(3, 3, 5);
+      scene.add(dirLight);
 
-  // Listener de resize nombrado para poder removerlo
-  function onResize() {
-    camera.aspect = container!.clientWidth / container!.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container!.clientWidth, container!.clientHeight);
-    composer.setSize(container!.clientWidth, container!.clientHeight);
-
-    if (window.innerWidth <= MOUSE_BREAKPOINT && interactionWrapper) {
-      interactionWrapper.rotation.set(0.1, 0, -0.15);
+      const spotLight = new THREE.SpotLight(0xffeedd, 30);
+      spotLight.position.set(0, maxDim * 2.5, 0);
+      spotLight.angle = Math.PI / 8;
+      spotLight.penumbra = 0.8;
+      scene.add(spotLight);
+      scene.add(spotLight.target);
     }
-  }
-  window.addEventListener("resize", onResize);
 
-  // ---- LIMPIEZA: detiene el loop, remueve listeners y libera la GPU ----
-  function cleanup() {
-    cancelAnimationFrame(rafId);
+    function hideLoader() {
+      return gsap.to("#loader-screen", {
+        opacity: 0,
+        duration: 0.6,
+        ease: "power2.inOut",
+        onComplete: () => {
+          const el = document.getElementById("loader-screen");
+          if (el) el.style.display = "none";
+    
+          (window as any).scene3DReady = true;
+          window.dispatchEvent(new Event("scene3d-loaded"));
+        },
+      });
+    }
 
-    document.removeEventListener("mousemove", onMouseMove);
-    window.removeEventListener("resize", onResize);
+    function playIntroAnimation(modelGroup: any, interactionWrapper: any, targetScale: any, finalHeightOffset: any) {
+      gsap
+        .timeline()
+        .add(hideLoader())
+        .to(
+          modelGroup.scale,
+          {
+            x: targetScale,
+            y: targetScale,
+            z: targetScale,
+            duration: 1.2,
+            ease: "power2.out",
+          },
+          "-=0.2",
+        )
+        .to(
+          modelGroup.position,
+          { y: finalHeightOffset, duration: 1.0, ease: "power2.out" },
+          "<",
+        )
+        .to(
+          interactionWrapper.rotation,
+          { z: -0.15, x: 0.1, duration: 1.0, ease: "power2.out" },
+          "<",
+        )
+        .fromTo(
+          modelGroup.rotation,
+          { y: -Math.PI / 4 },
+          { y: 0, duration: 1.2, ease: "power2.out" },
+          "<",
+        );
+    }
 
-    // Matamos cualquier tween de GSAP que siga corriendo
-    gsap.killTweensOf(camera.position);
-    gsap.killTweensOf("#loader-screen");
+    function setupResetOnIdle(controls: any, camera: any, originalCameraZ: any) {
 
-    controls.dispose();
-    particles?.geometry.dispose();
-    (particles?.material as THREE.Material | undefined)?.dispose();
-    pmrem.dispose();
+      let resetTimeout: ReturnType<typeof setTimeout> | undefined;
 
-    // EffectComposer expone dispose en versiones recientes; lo llamamos si existe
-    (composer as any).dispose?.();
+      controls.addEventListener("start", () => {
+        if (resetTimeout) clearTimeout(resetTimeout);
+        gsap.killTweensOf(camera.position);
+      });
 
-    renderer.dispose();
-    renderer.forceContextLoss?.();
-    renderer.domElement.remove();
-  }
+      controls.addEventListener("end", () => {
+        resetTimeout = setTimeout(() => {
+          gsap.to(camera.position, {
+            x: 0,
+            y: 0,
+            z: originalCameraZ,
+            duration: 2.0,
+            ease: "power3.inOut",
+            onStart: () => {
+              controls.enabled = false;
+            },
+            onUpdate: () => {
+              camera.lookAt(0, 0, 0);
+            },
+            onComplete: () => {
+              controls.enabled = true;
+              controls.update();
+            },
+          });
+        }, 1000);
+      });
+    }
 
-  // Astro: antes de intercambiar de página (View Transitions / ClientRouter)
-  document.addEventListener("astro:before-swap", cleanup, { once: true });
+    let mouseX = 0, mouseY = 0;
 
-  // Vite HMR en desarrollo: limpia la instancia anterior antes de re-ejecutar
-  if (import.meta.hot) {
-    import.meta.hot.dispose(cleanup);
+    function onMouseMove({ clientX, clientY }: any) {
+      if (window.innerWidth > MOUSE_BREAKPOINT) {
+        mouseX = (clientX - window.innerWidth / 2) * 0.001;
+        mouseY = (clientY - window.innerHeight / 2) * 0.001;
+      }
+    }
+    document.addEventListener("mousemove", onMouseMove);
+
+    if (!container) throw new Error("canvas-container not found");
+    container.replaceChildren();
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = setupRenderer(container);
+    const composer = setupComposer(renderer, scene, camera);
+    const controls = setupControls(camera, renderer.domElement);
+
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    
+    const modelGroup = new THREE.Group();
+    const interactionWrapper = new THREE.Group();
+    interactionWrapper.add(modelGroup);
+    scene.add(interactionWrapper);
+    modelGroup.scale.setScalar(0);
+    
+    let particles: any = null;
+    let maxDim = 0;
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(DRACO_PATH);
+    dracoLoader.preload();
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    gltfLoader.load(
+      MODEL_PATH,
+      (gltf: any) => {
+        const model = gltf.scene;
+
+        model.traverse((child: any) => {
+          if (!child.isMesh) return;
+          child.material = child.name.toLowerCase().includes("object_3")
+            ? MATERIALS.base
+            : MATERIALS.gold;
+          child.castShadow = true;
+          child.receiveShadow = true;
+        });
+
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        model.position.sub(center);
+        modelGroup.add(model);
+
+        maxDim = Math.max(size.x, size.y, size.z);
+        setupLights(scene, maxDim);
+
+        const fov = camera.fov * (Math.PI / 180);
+        const mobile = isMobile();
+        const originalCameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * (mobile ? 2 : 1.3);
+        camera.position.set(0, 0, originalCameraZ);
+        controls.target.set(0, 0, 0);
+        camera.updateProjectionMatrix();
+
+        const targetScale = mobile ? 1.5 : 0.95;
+        const finalHeightOffset = mobile ? maxDim * 0.08 : -(maxDim * 0.01);
+        modelGroup.position.y = finalHeightOffset - maxDim * 0.3;
+
+        particles = buildParticles(maxDim);
+        scene.add(particles);
+
+        playIntroAnimation(modelGroup, interactionWrapper, targetScale, finalHeightOffset);
+        setupResetOnIdle(controls, camera, originalCameraZ);
+      },
+      ({ loaded, total, lengthComputable }: any) => {
+        if (!lengthComputable) return;
+        const pct = (loaded / total) * 100;
+        const bar = document.getElementById("loader-bar");
+        const txt = document.getElementById("loader-percentage");
+        if (bar) bar.style.width = `${pct}%`;
+        if (txt) txt.innerText = `${Math.round(pct)}%`;
+      },
+      (error: any) => {
+        console.error("Error loading model:", error);
+        const el = document.getElementById("loader-screen");
+        if (el) el.style.display = "none";
+      },
+    );
+
+    function animateParticles() {
+      if (!particles || maxDim === 0) return;
+
+      const pos = particles.geometry.attributes.position.array;
+      const speeds = particles.speeds;
+      const sways = particles.sways;
+      const desktop = window.innerWidth > MOUSE_BREAKPOINT;
+
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        pos[i * 3 + 1] -= speeds[i];
+        pos[i * 3] += Math.sin(sways[i]) * 0.0005 * maxDim;
+        sways[i] += 0.01;
+        if (pos[i * 3 + 1] < -maxDim) pos[i * 3 + 1] = maxDim * 4;
+      }
+      particles.geometry.attributes.position.needsUpdate = true;
+
+      if (desktop) {
+        particles.rotation.y += 0.05 * (mouseX * 1.5 - particles.rotation.y);
+        particles.rotation.x += 0.05 * (mouseY * 1.5 - particles.rotation.x);
+      }
+    }
+
+    let rafId = 0;
+
+    function animate() {
+      rafId = requestAnimationFrame(animate);
+      animateParticles();
+      modelGroup.rotation.y -= 0.01;
+      controls.update();
+      composer.render();
+    }
+    animate();
+
+    function onResize() {
+
+      camera.aspect = container!.clientWidth / container!.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container!.clientWidth, container!.clientHeight);
+      composer.setSize(container!.clientWidth, container!.clientHeight);
+
+      if (window.innerWidth <= MOUSE_BREAKPOINT && interactionWrapper) {
+        interactionWrapper.rotation.set(0.1, 0, -0.15);
+      }
+    }
+    window.addEventListener("resize", onResize);
+
+    function cleanup() {
+      cancelAnimationFrame(rafId);
+      document.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("resize", onResize);
+
+      gsap.killTweensOf(camera.position);
+      gsap.killTweensOf("#loader-screen");
+
+      controls.dispose();
+      particles?.geometry.dispose();
+      particles?.material?.dispose();
+      pmrem.dispose();
+      if (composer.dispose) composer.dispose();
+
+      renderer.dispose();
+      if (renderer.forceContextLoss) renderer.forceContextLoss();
+      renderer.domElement.remove();
+    }
+
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
+
+    // @ts-ignore
+    if (import.meta.hot) {
+      // @ts-ignore
+      import.meta.hot.dispose(cleanup);
+    }
   }
 </script>

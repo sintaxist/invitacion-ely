@@ -1,5 +1,8 @@
 ---
 import SectionTitle from './SectionTitle.astro';
+import { Image } from "astro:assets";
+import ely1 from '../assets/ely-1.jpg';
+import ely2 from '../assets/ely-2.jpg';
 ---
 
 <section class="relative w-full max-w-400 overflow-hidden px-5 xs:px-10 lg:px-25 xl:px-40 mb-45 sm:mb-60 mx-auto">
@@ -33,20 +36,24 @@ import SectionTitle from './SectionTitle.astro';
         <div class="w-full lg:w-1/2 flex justify-center lg:justify-end">
             
             <div class="grid grid-cols-2 gap-4 xs:gap-6 w-full max-w-125">
-                
-                <img 
-                    src="/ely-1.jpg" 
+
+                <Image
+                    src={ely1}
                     alt="Ely Fraire Graduación" 
                     loading="lazy"
                     decoding="async"
+                    width={600}
+                    height={800}
                     class="img-scroll-anim opacity-0 w-full h-75 xs:h-100 lg:h-125 object-cover rounded-l-[85px] sm:rounded-l-[150px]"
                 />
-                
-                <img 
-                    src="/ely-2.jpg" 
+
+                <Image
+                    src={ely2}
                     alt="Ely Fraire Viaje" 
                     loading="lazy"
                     decoding="async"
+                    width={600}
+                    height={800}
                     class="img-scroll-anim opacity-0 w-full h-75 xs:h-100 lg:h-125 object-cover rounded-br-[85px] sm:rounded-br-[150px]"
                 />
             </div>

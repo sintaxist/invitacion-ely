@@ -70,7 +70,6 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
   ) as HTMLElement;
   const card = wrapper.querySelector(".wa-card") as HTMLElement;
 
-  // CORRECCIÓN: Seleccionamos los elementos HÍJOS directos del wrapper para no afectar a otros
   const content = wrapper.querySelectorAll(".pop-element, h3, p, span");
 
   const rotX = gsap.quickTo(card, "rotationX", {
@@ -82,7 +81,6 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
     duration: 0.6,
   });
 
-  // GSAP quickTo funciona sobre un elemento, para varios usamos una animación estándar dentro del evento
   wrapper.addEventListener("pointermove", (e) => {
     if (window.innerWidth < 1024) return;
     const { left, top, width, height } = wrapper.getBoundingClientRect();
@@ -92,7 +90,6 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
     rotX(-y * 30);
     rotY(x * 30);
 
-    // Animación de los elementos hijos dentro del contexto del wrapper
     gsap.to(content, {
       x: x * 40,
       y: y * 40,

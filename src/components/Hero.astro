@@ -1,6 +1,8 @@
 ---
 import Scene3D from "./Scene3D.astro";
 import Button from "./Button.astro";
+import { Image } from "astro:assets";
+import lightImage from "../assets/lights.png";
 ---
 
 <section
@@ -9,12 +11,14 @@ import Button from "./Button.astro";
   <div
     class="absolute top-0 left-0 lg:left-auto lg:right-0 w-full lg:w-1/2 h-[60vh] lg:h-full z-0 opacity-90 pointer-events-none overflow-hidden"
   >
-    <img
-      src="/lights.png"
-      alt="Fondo de luces doradas"
-      fetchpriority="high"
-      decoding="sync"
+    <Image
+      src={lightImage} 
+      alt="Fondo de luces" 
+      quality="high"
+      loading="lazy"
+      decoding="async"
       class="w-full h-full object-cover object-top lg:object-center"
+      style="transform: translateZ(0); will-change: transform; backface-visibility: hidden;"
     />
   </div>
 

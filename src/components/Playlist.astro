@@ -2,52 +2,49 @@
 import SectionTitle from "./SectionTitle.astro";
 import CardEvent from "./CardEvent.astro";
 
+import imgMarcha from "../assets/songs/la-marcha-de-los-santos.jpeg";
+import imgWeAre from "../assets/songs/we-are-the-champions.jpeg";
+import imgTribu from "../assets/songs/tribu.jpeg";
+import imgAmigos from "../assets/songs/somos-amigos.jpeg";
+import imgGarabato from "../assets/songs/garabato-colorado.jpeg";
+import imgSerpiente from "../assets/songs/soy-una-serpiente.jpeg";
+
 const playlist = [
   {
     title: "La Marcha De Los Santos",
-    imageSrc: "/songs/la-marcha-de-los-santos.jpeg",
+    imageSrc: imgMarcha,
     youtubeLink: "https://www.youtube.com/watch?v=cAYn8oji_3g",
-    spotifyLink:
-      "https://open.spotify.com/intl-es/track/0AeCoXVwyfWnbJXh98RI9t?si=b4bf7b107c5c4685",
+    spotifyLink: "https://open.spotify.com/intl-es/track/0AeCoXVwyfWnbJXh98RI9t?si=b4bf7b107c5c4685",
   },
   {
     title: "We Are The Champions",
-    imageSrc: "/songs/we-are-the-champions.jpeg",
-    youtubeLink:
-      "https://www.youtube.com/watch?v=d5GkgVhFeZY&list=RDd5GkgVhFeZY&start_radio=1",
-    spotifyLink:
-      "https://open.spotify.com/intl-es/track/5OopR4VVuv6WK07X8ZM9v7?si=c8586e5e502444a3",
+    imageSrc: imgWeAre,
+    youtubeLink: "https://www.youtube.com/watch?v=d5GkgVhFeZY&list=RDd5GkgVhFeZY&start_radio=1",
+    spotifyLink: "https://open.spotify.com/intl-es/track/5OopR4VVuv6WK07X8ZM9v7?si=c8586e5e502444a3",
   },
   {
     title: "Tribu",
-    imageSrc: "/songs/tribu.jpeg",
+    imageSrc: imgTribu,
     youtubeLink: "https://www.youtube.com/watch?v=gqqEsYW8Yto",
-    spotifyLink:
-      "https://open.spotify.com/intl-es/track/3IYjSrrIOz5Ox3cnSwcEpv?si=ad9a84fd2f274a22",
+    spotifyLink: "https://open.spotify.com/intl-es/track/3IYjSrrIOz5Ox3cnSwcEpv?si=ad9a84fd2f274a22",
   },
   {
     title: "Somos Amigos",
-    imageSrc: "/songs/somos-amigos.jpeg",
-    youtubeLink:
-      "https://www.youtube.com/watch?v=S-zVkT2yJx0&list=RDS-zVkT2yJx0&start_radio=1",
-    spotifyLink:
-      "https://open.spotify.com/intl-es/track/1ujhS6I6qqdJeuZ6sYHQY8?si=c7d79a9bc9934165",
+    imageSrc: imgAmigos,
+    youtubeLink: "https://www.youtube.com/watch?v=S-zVkT2yJx0&list=RDS-zVkT2yJx0&start_radio=1",
+    spotifyLink: "https://open.spotify.com/intl-es/track/1ujhS6I6qqdJeuZ6sYHQY8?si=c7d79a9bc9934165",
   },
   {
     title: "Garabato Colorado",
-    imageSrc: "/songs/garabato-colorado.jpeg",
-    youtubeLink:
-      "https://www.youtube.com/watch?v=gsDIwloStmQ&list=RDgsDIwloStmQ&start_radio=1",
-    spotifyLink:
-      "https://open.spotify.com/intl-es/track/1XddjFsSL7rpNLcr7FSop7?si=1253c79db2034446",
+    imageSrc: imgGarabato,
+    youtubeLink: "https://www.youtube.com/watch?v=gsDIwloStmQ&list=RDgsDIwloStmQ&start_radio=1",
+    spotifyLink: "https://open.spotify.com/intl-es/track/1XddjFsSL7rpNLcr7FSop7?si=1253c79db2034446",
   },
   {
     title: "Soy una Serpiente",
-    imageSrc: "/songs/soy-una-serpiente.jpeg",
-    youtubeLink:
-      "https://www.youtube.com/watch?v=R6HoqbnuRaw&list=RDR6HoqbnuRaw&start_radio=1",
-    spotifyLink:
-      "https://open.spotify.com/intl-es/track/1OhhuJ8tvBNtDSeh6fAndR?si=7df757c21bae4ab3",
+    imageSrc: imgSerpiente,
+    youtubeLink: "https://www.youtube.com/watch?v=R6HoqbnuRaw&list=RDR6HoqbnuRaw&start_radio=1",
+    spotifyLink: "https://open.spotify.com/intl-es/track/1OhhuJ8tvBNtDSeh6fAndR?si=7df757c21bae4ab3",
   },
 ];
 ---
@@ -63,9 +60,7 @@ const playlist = [
       titleGold="Fotos"
     />
 
-    <p
-      class="font-sans font-light text-mont-15 xs:text-mont-18 text-white/90 leading-[1.8]"
-    >
+    <p class="font-sans font-light text-mont-15 xs:text-mont-18 text-white/90 leading-[1.8]">
       Todos los buenos momentos se comparten con música. ¡Prepárate para cantar!
     </p>
   </div>
@@ -92,7 +87,6 @@ const playlist = [
 
   gsap.registerPlugin(ScrollTrigger);
 
-  // Aseguramos que SOLO seleccione las de música
   const musicCards = document.querySelectorAll("#musica .card-anim");
 
   if (musicCards.length > 0) {
@@ -118,7 +112,6 @@ const playlist = [
             card.classList.remove("opacity-0");
           });
         },
-        // Eliminamos clearProps para evitar el salto de repintado al final
       },
     );
   }
