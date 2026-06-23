@@ -25,12 +25,12 @@
 
 @font-face {
     font-family: 'Rosehot';
-    src: url('/fonts/Rosehot-Regular.eot');
-    src: url('/fonts/Rosehot-Regular.eot?#iefix') format('embedded-opentype'),
-        url('/fonts/Rosehot-Regular.woff2') format('woff2'),
-        url('/fonts/Rosehot-Regular.woff') format('woff'),
-        url('/fonts/Rosehot-Regular.ttf') format('truetype'),
-        url('/fonts/Rosehot-Regular.svg#Rosehot-Regular') format('svg');
+    src: url('/fonts/Rosehot.eot');
+    src: url('/fonts/Rosehot.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/Rosehot.woff2') format('woff2'),
+        url('/fonts/Rosehot.woff') format('woff'),
+        url('/fonts/Rosehot.ttf') format('truetype'),
+        url('/fonts/Rosehot.svg#Rosehot') format('svg');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
