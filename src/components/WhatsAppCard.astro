@@ -48,7 +48,7 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
         Envía un mensaje directo a la anfitriona para asegurar tu lugar en la mesa.
       </p>
 
-      <div class="pop-element mt-2 inline-flex items-center gap-2 font-sans font-medium text-mont-12 text-gold tracking-widest uppercase border-b border-gold/30 pb-1 hover:border-gold transition-colors">
+      <div class="pop-element mt-2 inline-flex items-center gap-2 font-sans font-medium text-mont-12 text-gold tracking-widest uppercase border-b border-gold pb-1 transition-colors">
         <span>Confirmar asistencia</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
       </div>
@@ -58,25 +58,24 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
 
 <style>
   .card-perspective-wrapper {
-    perspective: 1000px; /* Perspectiva más profunda para que el giro se vea natural */
+    perspective: 1000px;
   }
   .wa-card {
     transform-style: preserve-3d;
     will-change: transform;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); /* Sombra dramática de tarjeta real */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     transition: box-shadow 0.5s ease;
   }
   .wa-card:hover {
-    box-shadow: 0 35px 60px -15px rgba(201, 144, 64, 0.2); /* Resplandor dorado al pasar el mouse */
+    box-shadow: 0 35px 60px -15px rgba(201, 144, 64, 0.2);
   }
   .wa-card:hover .spotlight {
-    opacity: 1; /* Enciende la luz al pasar el ratón */
+    opacity: 1;
   }
   .wa-content {
     transform-style: preserve-3d;
   }
   .pop-element {
-    /* Las letras flotan más hacia la cámara para un efecto 3D brutal */
     transform: translateZ(60px); 
   }
 </style>
@@ -89,34 +88,27 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
   const spotlight = wrapper.querySelector(".spotlight") as HTMLElement;
   const contentElements = wrapper.querySelectorAll(".pop-element");
 
-  // Aceleramos la respuesta del giro para que se sienta muy ágil (0.3s en lugar de 0.6s)
   const rotX = gsap.quickTo(card, "rotationX", { ease: "power2.out", duration: 0.3 });
   const rotY = gsap.quickTo(card, "rotationY", { ease: "power2.out", duration: 0.3 });
 
   wrapper.addEventListener("pointermove", (e) => {
-    // En móviles no giramos, la GPU lo agradecerá, pero mantenemos el diseño hermoso
     if (window.innerWidth < 1024) return;
     
     const { left, top, width, height } = card.getBoundingClientRect();
     
-    // Matemática para el centro del elemento
     const centerX = left + width / 2;
     const centerY = top + height / 2;
     
-    // Cálculo de la posición del ratón respecto al centro (-1 a 1)
     const mouseX = (e.clientX - centerX) / (width / 2);
     const mouseY = (e.clientY - centerY) / (height / 2);
 
-    // Movimiento de la luz (Spotlight) siguiendo al ratón exactamente
     const spotX = e.clientX - left;
     const spotY = e.clientY - top;
     spotlight.style.background = `radial-gradient(circle 400px at ${spotX}px ${spotY}px, rgba(201, 144, 64, 0.25), transparent 80%)`;
 
-    // Giro de la tarjeta limitando los grados (max 15 grados)
     rotX(-mouseY * 15);
     rotY(mouseX * 15);
 
-    // Las letras flotan en dirección opuesta a la tarjeta para el efecto parallax 3D
     gsap.to(contentElements, {
       x: mouseX * 25,
       y: mouseY * 25,
