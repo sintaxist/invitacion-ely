@@ -40,27 +40,13 @@
     transform: translateY(15px);
     animation: elegantFadeUp .5s ease-out forwards;
   }
-  .loader-text:nth-child(1) {
-    animation-delay: 0.1s;
-  }
-  .loader-text:nth-child(2) {
-    animation-delay: 0.3s;
-  }
-  .loader-text:nth-child(3) {
-    animation-delay: 0.5s;
-  }
+  .loader-text:nth-child(1) { animation-delay: 0.1s; }
+  .loader-text:nth-child(2) { animation-delay: 0.3s; }
+  .loader-text:nth-child(3) { animation-delay: 0.5s; }
 
   @keyframes elegantFadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(15px);
-      filter: blur(2px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-      filter: blur(0);
-    }
+    from { opacity: 0; transform: translateY(15px); filter: blur(2px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
   }
 </style>
 
@@ -89,7 +75,7 @@
     const { gsap } = await import("gsap");
     const { MATERIALS, DRACO_PATH, MODEL_PATH } = await import("../utils/varThreeJs");
 
-    const PARTICLE_COUNT = 200;
+    // const PARTICLE_COUNT = 200; // COMENTADO: Partículas
     const MOBILE_BREAKPOINT = 1000;
     const MOUSE_BREAKPOINT = 968;
 
@@ -97,56 +83,10 @@
       return window.innerWidth <= MOBILE_BREAKPOINT;
     }
 
-    function createParticleTexture() {
-      const canvas = Object.assign(document.createElement("canvas"), {
-        width: 32,
-        height: 32,
-      });
-
-      const ctx = canvas.getContext("2d")!;
-      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      gradient.addColorStop(0, "rgba(255,255,255,1)");
-      gradient.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 32, 32);
-      return new THREE.CanvasTexture(canvas);
-    }
-
-    function buildParticles(maxDim: any) {
-      const geometry = new THREE.BufferGeometry();
-      const positions = new Float32Array(PARTICLE_COUNT * 3);
-      const speeds = new Float32Array(PARTICLE_COUNT);
-      const sways = new Float32Array(PARTICLE_COUNT);
-
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        const y = -maxDim + Math.random() * (maxDim * 5);
-        const r = Math.sqrt(Math.random()) * maxDim * 0.6;
-        const theta = Math.random() * Math.PI * 2;
-        positions[i * 3] = r * Math.cos(theta);
-        positions[i * 3 + 1] = y;
-        positions[i * 3 + 2] = r * Math.sin(theta);
-        speeds[i] = (Math.random() * 0.003 + 0.001) * maxDim;
-        sways[i] = Math.random() * Math.PI * 2;
-      }
-
-      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-      const material = new THREE.PointsMaterial({
-        color: 0xffeebb,
-        size: maxDim * 0.015,
-        transparent: true,
-        opacity: 1,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        map: createParticleTexture(),
-      });
-
-
-      const points: any = new THREE.Points(geometry, material);
-      points.speeds = speeds;
-      points.sways = sways;
-      return points;
-    }
+    /* --- COMENTADO: LÓGICA DE PARTÍCULAS ---
+    function createParticleTexture() { ... }
+    function buildParticles(maxDim: any) { ... }
+    ----------------------------------------*/
 
     function setupRenderer(container: any) {
       const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -164,9 +104,7 @@
 
       const bloom = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        1.5,
-        0.4,
-        0.85,
+        1.5, 0.4, 0.85,
       );
       bloom.threshold = 0.95;
       bloom.strength = 0.25;
@@ -210,48 +148,23 @@
         onComplete: () => {
           const el = document.getElementById("loader-screen");
           if (el) el.style.display = "none";
-    
           (window as any).scene3DReady = true;
           window.dispatchEvent(new Event("scene3d-loaded"));
         },
       });
     }
 
-    function playIntroAnimation(modelGroup: any, interactionWrapper: any, targetScale: any, finalHeightOffset: any) {
+    function playIntroAnimation(modelGroup: any, interactionWrapper: any, targetScale: any, finalHeightOffset: any, rotZ: any, rotX: any) {
       gsap
         .timeline()
         .add(hideLoader())
-        .to(
-          modelGroup.scale,
-          {
-            x: targetScale,
-            y: targetScale,
-            z: targetScale,
-            duration: 1.2,
-            ease: "power2.out",
-          },
-          "-=0.2",
-        )
-        .to(
-          modelGroup.position,
-          { y: finalHeightOffset, duration: 1.0, ease: "power2.out" },
-          "<",
-        )
-        .to(
-          interactionWrapper.rotation,
-          { z: -0.15, x: 0.1, duration: 1.0, ease: "power2.out" },
-          "<",
-        )
-        .fromTo(
-          modelGroup.rotation,
-          { y: -Math.PI / 4 },
-          { y: 0, duration: 1.2, ease: "power2.out" },
-          "<",
-        );
+        .to(modelGroup.scale, { x: targetScale, y: targetScale, z: targetScale, duration: 1.2, ease: "power2.out" }, "-=0.2")
+        .to(modelGroup.position, { y: finalHeightOffset, duration: 1.0, ease: "power2.out" }, "<")
+        .to(interactionWrapper.rotation, { z: rotZ, x: rotX, duration: 1.0, ease: "power2.out" }, "<")
+        .fromTo(modelGroup.rotation, { y: -Math.PI / 4 }, { y: 0, duration: 1.2, ease: "power2.out" }, "<");
     }
 
     function setupResetOnIdle(controls: any, camera: any, originalCameraZ: any) {
-
       let resetTimeout: ReturnType<typeof setTimeout> | undefined;
 
       controls.addEventListener("start", () => {
@@ -261,21 +174,20 @@
 
       controls.addEventListener("end", () => {
         resetTimeout = setTimeout(() => {
+          // FIX AL LAG: Deshabilitamos controls para que no pelee con GSAP
+          controls.enabled = false; 
+
           gsap.to(camera.position, {
             x: 0,
             y: 0,
             z: originalCameraZ,
-            duration: 2.0,
-            ease: "power3.inOut",
-            onStart: () => {
-              controls.enabled = false;
-            },
+            duration: 1.5, // Un poco más rápido para sentirse más reactivo
+            ease: "power2.inOut",
             onUpdate: () => {
               camera.lookAt(0, 0, 0);
             },
             onComplete: () => {
-              controls.enabled = true;
-              controls.update();
+              controls.enabled = true; // Rehabilitamos al terminar
             },
           });
         }, 1000);
@@ -310,7 +222,7 @@
     scene.add(interactionWrapper);
     modelGroup.scale.setScalar(0);
     
-    let particles: any = null;
+    // let particles: any = null; // COMENTADO
     let maxDim = 0;
 
     const dracoLoader = new DRACOLoader();
@@ -352,12 +264,17 @@
 
         const targetScale = mobile ? 1.5 : 0.95;
         const finalHeightOffset = mobile ? maxDim * 0.08 : -(maxDim * 0.01);
+        
+        // FIX: ESTÁTICA DERECHA EN MÓVIL (0) Y LIGERAMENTE INCLINADA EN DESKTOP
+        const targetRotZ = mobile ? 0 : -0.15; 
+        const targetRotX = mobile ? 0 : 0.1;
+
         modelGroup.position.y = finalHeightOffset - maxDim * 0.3;
 
-        particles = buildParticles(maxDim);
-        scene.add(particles);
+        // particles = buildParticles(maxDim); // COMENTADO
+        // scene.add(particles); // COMENTADO
 
-        playIntroAnimation(modelGroup, interactionWrapper, targetScale, finalHeightOffset);
+        playIntroAnimation(modelGroup, interactionWrapper, targetScale, finalHeightOffset, targetRotZ, targetRotX);
         setupResetOnIdle(controls, camera, originalCameraZ);
       },
       ({ loaded, total, lengthComputable }: any) => {
@@ -375,48 +292,42 @@
       },
     );
 
-    function animateParticles() {
-      if (!particles || maxDim === 0) return;
-
-      const pos = particles.geometry.attributes.position.array;
-      const speeds = particles.speeds;
-      const sways = particles.sways;
-      const desktop = window.innerWidth > MOUSE_BREAKPOINT;
-
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        pos[i * 3 + 1] -= speeds[i];
-        pos[i * 3] += Math.sin(sways[i]) * 0.0005 * maxDim;
-        sways[i] += 0.01;
-        if (pos[i * 3 + 1] < -maxDim) pos[i * 3 + 1] = maxDim * 4;
-      }
-      particles.geometry.attributes.position.needsUpdate = true;
-
-      if (desktop) {
-        particles.rotation.y += 0.05 * (mouseX * 1.5 - particles.rotation.y);
-        particles.rotation.x += 0.05 * (mouseY * 1.5 - particles.rotation.x);
-      }
-    }
+    /* --- COMENTADO: ANIMACIÓN DE PARTÍCULAS ---
+    function animateParticles() { ... }
+    -------------------------------------------*/
 
     let rafId = 0;
 
     function animate() {
       rafId = requestAnimationFrame(animate);
-      animateParticles();
-      modelGroup.rotation.y -= 0.01;
-      controls.update();
+      
+      // animateParticles(); // COMENTADO
+      
+      // ROTACIÓN MÁS RÁPIDA: (Aumentado de 0.01 a 0.025)
+      modelGroup.rotation.y -= 0.025; 
+      
+      // FIX AL LAG: Solo actualizamos Controls si están activos
+      if(controls.enabled) {
+          controls.update();
+      }
+      
       composer.render();
     }
     animate();
 
     function onResize() {
-
       camera.aspect = container!.clientWidth / container!.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container!.clientWidth, container!.clientHeight);
       composer.setSize(container!.clientWidth, container!.clientHeight);
 
-      if (window.innerWidth <= MOUSE_BREAKPOINT && interactionWrapper) {
-        interactionWrapper.rotation.set(0.1, 0, -0.15);
+      // FIX AL RESIZE: Mantener recto en móvil si se gira la pantalla
+      if (interactionWrapper) {
+        if (window.innerWidth <= MOUSE_BREAKPOINT) {
+          interactionWrapper.rotation.set(0, 0, 0); // Recto
+        } else {
+          interactionWrapper.rotation.set(0.1, 0, -0.15); // Inclinado
+        }
       }
     }
     window.addEventListener("resize", onResize);
@@ -430,8 +341,8 @@
       gsap.killTweensOf("#loader-screen");
 
       controls.dispose();
-      particles?.geometry.dispose();
-      particles?.material?.dispose();
+      // particles?.geometry.dispose(); // COMENTADO
+      // particles?.material?.dispose(); // COMENTADO
       pmrem.dispose();
       if (composer.dispose) composer.dispose();
 
