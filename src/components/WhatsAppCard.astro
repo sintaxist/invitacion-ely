@@ -8,20 +8,28 @@ const { phoneNumber, message } = Astro.props;
 const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 ---
 
-<div class="card-perspective-wrapper relative w-full max-w-120 mx-auto">
+<div class="card-perspective-wrapper relative w-full max-w-140 mx-auto px-5 xs:px-0">
   <a
     href={waUrl}
     target="_blank"
     rel="noopener noreferrer"
-    class="wa-card flex flex-col justify-center relative z-10 w-full min-h-90 sm:min-h-120
-           bg-gold/10 backdrop-blur-xl border border-gold/15 border-t-gold/25 border-l-gold/25
-           shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[30px] overflow-hidden"
+    class="wa-card block relative z-10 w-full rounded-3xl overflow-hidden cursor-pointer"
   >
+    <div class="absolute inset-0 bg-linear-to-br from-[#1a1a1a] to-[#0a0a0a] z-0"></div>
+    
+    <div class="spotlight absolute inset-0 opacity-0 transition-opacity duration-300 z-10 pointer-events-none" 
+         style="background: radial-gradient(circle 300px at 50% 50%, rgba(201, 144, 64, 0.15), transparent 80%); mix-blend-mode: screen;">
+    </div>
+
+    <div class="absolute inset-0 border border-gold/30 rounded-3xl z-10 pointer-events-none"></div>
+    <div class="absolute inset-0 border-t border-l border-white/10 rounded-3xl z-10 pointer-events-none"></div>
+
     <div
-      class="wa-content h-full p-8 sm:p-12 flex flex-col gap-6 sm:gap-10 items-center justify-center align-middle text-center"
+      class="wa-content relative z-20 h-full p-10 sm:p-14 flex flex-col items-center justify-center text-center gap-8"
     >
+      
       <svg
-        class="pop-element w-14 sm:w-16 h-14 sm:h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+        class="pop-element w-12 sm:w-15 h-12 sm:h-15 text-white drop-shadow-[0_0_10px_rgba(201,144,64,0.5)] mb-5"
         fill="currentColor"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -31,76 +39,95 @@ const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
         ></path>
       </svg>
 
-      <h3
-        class="pop-element font-serif text-rose-30 lg:text-rose-40 text-white leading-[1.1]"
-      >
-        Confirmar <br />
-        <span class="text-gold">Asistencia</span>
+      <h3 class="pop-element font-serif text-rose-35 sm:text-rose-45 text-white leading-[1.1] tracking-wide uppercase">
+        Confirmar<br />
+        <span class="text-gold font-light text-[1.1em]">asistencia</span>
       </h3>
-      <p
-        class="pop-element font-sans font-light text-mont-15 lg:text-mont-18 text-white/80 mb-8 leading-[1.6]"
-      >
-        Haz clic aquí para enviar un mensaje de confirmacion a <strong class="text-gold font-medium">Ely</strong>.
+      
+      <p class="pop-element max-w-sm font-sans font-light text-mont-15 sm:text-mont-18 text-white/70 leading-relaxed">
+        Envía un mensaje directo a la anfitriona para asegurar tu lugar en la mesa.
       </p>
+
+      <div class="pop-element mt-2 inline-flex items-center gap-2 font-sans font-medium text-mont-12 text-gold tracking-widest uppercase border-b border-gold/30 pb-1 hover:border-gold transition-colors">
+        <span>Confirmar asistencia</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+      </div>
     </div>
   </a>
 </div>
 
 <style>
   .card-perspective-wrapper {
-    perspective: 700px;
+    perspective: 1000px; /* Perspectiva más profunda para que el giro se vea natural */
   }
   .wa-card {
     transform-style: preserve-3d;
     will-change: transform;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); /* Sombra dramática de tarjeta real */
+    transition: box-shadow 0.5s ease;
+  }
+  .wa-card:hover {
+    box-shadow: 0 35px 60px -15px rgba(201, 144, 64, 0.2); /* Resplandor dorado al pasar el mouse */
+  }
+  .wa-card:hover .spotlight {
+    opacity: 1; /* Enciende la luz al pasar el ratón */
   }
   .wa-content {
     transform-style: preserve-3d;
   }
   .pop-element {
-    transform: translateZ(40px);
+    /* Las letras flotan más hacia la cámara para un efecto 3D brutal */
+    transform: translateZ(60px); 
   }
 </style>
 
 <script>
   import { gsap } from "gsap";
 
-  const wrapper = document.querySelector(
-    ".card-perspective-wrapper",
-  ) as HTMLElement;
+  const wrapper = document.querySelector(".card-perspective-wrapper") as HTMLElement;
   const card = wrapper.querySelector(".wa-card") as HTMLElement;
+  const spotlight = wrapper.querySelector(".spotlight") as HTMLElement;
+  const contentElements = wrapper.querySelectorAll(".pop-element");
 
-  const content = wrapper.querySelectorAll(".pop-element, h3, p, span");
-
-  const rotX = gsap.quickTo(card, "rotationX", {
-    ease: "power3",
-    duration: 0.6,
-  });
-  const rotY = gsap.quickTo(card, "rotationY", {
-    ease: "power3",
-    duration: 0.6,
-  });
+  // Aceleramos la respuesta del giro para que se sienta muy ágil (0.3s en lugar de 0.6s)
+  const rotX = gsap.quickTo(card, "rotationX", { ease: "power2.out", duration: 0.3 });
+  const rotY = gsap.quickTo(card, "rotationY", { ease: "power2.out", duration: 0.3 });
 
   wrapper.addEventListener("pointermove", (e) => {
+    // En móviles no giramos, la GPU lo agradecerá, pero mantenemos el diseño hermoso
     if (window.innerWidth < 1024) return;
-    const { left, top, width, height } = wrapper.getBoundingClientRect();
-    const x = (e.clientX - left) / width - 0.5;
-    const y = (e.clientY - top) / height - 0.5;
+    
+    const { left, top, width, height } = card.getBoundingClientRect();
+    
+    // Matemática para el centro del elemento
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    
+    // Cálculo de la posición del ratón respecto al centro (-1 a 1)
+    const mouseX = (e.clientX - centerX) / (width / 2);
+    const mouseY = (e.clientY - centerY) / (height / 2);
 
-    rotX(-y * 30);
-    rotY(x * 30);
+    // Movimiento de la luz (Spotlight) siguiendo al ratón exactamente
+    const spotX = e.clientX - left;
+    const spotY = e.clientY - top;
+    spotlight.style.background = `radial-gradient(circle 400px at ${spotX}px ${spotY}px, rgba(201, 144, 64, 0.25), transparent 80%)`;
 
-    gsap.to(content, {
-      x: x * 40,
-      y: y * 40,
-      ease: "power3.out",
-      duration: 0.6,
+    // Giro de la tarjeta limitando los grados (max 15 grados)
+    rotX(-mouseY * 15);
+    rotY(mouseX * 15);
+
+    // Las letras flotan en dirección opuesta a la tarjeta para el efecto parallax 3D
+    gsap.to(contentElements, {
+      x: mouseX * 25,
+      y: mouseY * 25,
+      ease: "power2.out",
+      duration: 0.3,
     });
   });
 
   wrapper.addEventListener("pointerleave", () => {
     rotX(0);
     rotY(0);
-    gsap.to(content, { x: 0, y: 0, ease: "power3.out", duration: 0.6 });
+    gsap.to(contentElements, { x: 0, y: 0, ease: "power2.out", duration: 0.5 });
   });
 </script>
