@@ -25,7 +25,12 @@
 
 @font-face {
   font-family: 'Rosehot';
-  src: url('/fonts/Rosehot.ttf') format('truetype');
+  src: url('Rosehot-Regular.eot');
+  src: url('Rosehot-Regular.eot?#iefix') format('embedded-opentype'),
+    url('Rosehot-Regular.woff2') format('woff2'),
+    url('Rosehot-Regular.woff') format('woff'),
+    url('Rosehot-Regular.ttf') format('truetype'),
+    url('Rosehot-Regular.svg#Rosehot-Regular') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
